@@ -47,6 +47,10 @@ local function encodePalette(palette)
 			out[token] = "#" .. value:ToHex()
 		elseif token == "ScrimTransparency" and type(value) == "number" then
 			out[token] = value
+		elseif (token == "Appearance" or token == "Pair") and type(value) == "string" then
+			-- Polarity metadata: without this, a saved theme loses its declared
+			-- light/dark side and falls back to luminance guessing on reload.
+			out[token] = value
 		end
 	end
 	return out
@@ -60,6 +64,8 @@ local function decodePalette(palette)
 				out[token] = color
 			end
 		elseif token == "ScrimTransparency" and type(value) == "number" then
+			out[token] = value
+		elseif (token == "Appearance" or token == "Pair") and type(value) == "string" then
 			out[token] = value
 		end
 	end
@@ -83,6 +89,12 @@ local function validatePalette(palette)
 		return false, 'palette token "ScrimTransparency" must be number'
 	end
 	palette.ScrimTransparency = math.clamp(palette.ScrimTransparency, 0, 1)
+	if palette.Appearance ~= nil and palette.Appearance ~= "Dark" and palette.Appearance ~= "Light" then
+		return false, 'palette token "Appearance" must be "Dark" or "Light"'
+	end
+	if palette.Pair ~= nil and type(palette.Pair) ~= "string" then
+		return false, 'palette token "Pair" must be a string'
+	end
 	return true
 end
 
@@ -95,6 +107,48 @@ function ThemeManager.new(window, folder)
 	}, ThemeManager)
 	self:ReloadCustomThemes()
 	self:_loadDefaultMarker()
+	self:_loadAppearanceMarker()
+	self:_watchTheme()
+	return self
+end
+
+-- The light/dark toggle remembers the last theme used on each side. Persisting
+-- it is what stops the first toggle of a new session from dropping the user
+-- onto a built-in theme they had already replaced.
+function ThemeManager:_loadAppearanceMarker()
+	local raw = self._storage:Read("appearance.json")
+	if type(raw) ~= "string" or raw == "" then
+		return self
+	end
+	local ok, data = pcall(HttpService.JSONDecode, HttpService, raw)
+	if not ok or type(data) ~= "table" then
+		return self
+	end
+	local theme = self._window.Theme
+	for _, polarity in { "Dark", "Light" } do
+		if type(data[polarity]) == "string" then
+			theme:RememberPolarity(polarity, data[polarity])
+		end
+	end
+	return self
+end
+
+function ThemeManager:_saveAppearanceMarker()
+	local recent = self._window.Theme:RecentByPolarity()
+	local ok, raw = pcall(HttpService.JSONEncode, HttpService, recent)
+	if ok then
+		self._storage:Write("appearance.json", raw)
+	end
+	return self
+end
+
+function ThemeManager:_watchTheme()
+	local theme = self._window.Theme
+	if theme and theme.Changed then
+		self._appearanceConn = theme.Changed:Connect(function()
+			self:_saveAppearanceMarker()
+		end)
+	end
 	return self
 end
 
@@ -127,6 +181,7 @@ function ThemeManager:SetFolder(folder)
 	self._default = nil
 	self:ReloadCustomThemes()
 	self:_loadDefaultMarker()
+	self:_loadAppearanceMarker()
 	return true
 end
 
@@ -162,7 +217,10 @@ function ThemeManager:DeleteCustomTheme(name)
 		return false, "theme not found"
 	end
 	if self._window.Theme:Current() == name then
-		self._window.Theme:Set("Dark")
+		-- Read the polarity while the palette is still registered: deleting a
+		-- light theme should land on Light, not flip the user to a dark UI.
+		local polarity = self._window.Theme:Polarity(name)
+		self._window.Theme:Set(if polarity == "Light" then "Light" else "Dark")
 	end
 	if not self._storage:Delete(self:_file(name)) then
 		return false, "delete failed"
@@ -270,6 +328,10 @@ function ThemeManager:LoadDefault()
 end
 
 function ThemeManager:Destroy()
+	if self._appearanceConn then
+		self._appearanceConn:Disconnect()
+		self._appearanceConn = nil
+	end
 	self._custom = {}
 end
 

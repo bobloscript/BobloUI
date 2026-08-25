@@ -12,6 +12,7 @@
     "test:static": "npm run build && node tests/static.mjs",
     "test:syntax": "python3 luaucheck.py",
     "test:store": "python3 harness.py tests/store.spec.lua",
-    "test": "npm run test:syntax && npm run test:store && npm run test:static"
+    "test:theme": "python3 harness.py tests/theme.spec.lua",
+    "test": "npm run test:syntax && npm run test:store && npm run test:theme && npm run test:static"
   }
 }

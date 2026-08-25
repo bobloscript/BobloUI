@@ -391,6 +391,15 @@ function Settings:_ensureMounted()
 		Options = w.Theme:List(),
 		Default = w.Theme:Current(),
 		IgnoreConfig = true,
+		-- Showing the polarity is what makes the light/dark toggle legible:
+		-- without it, users cannot tell why a switch landed where it did.
+		FormatDisplayValue = function(value)
+			local polarity = w.Theme:Polarity(value)
+			if not polarity or value == polarity then
+				return value
+			end
+			return `{value} · {polarity}`
+		end,
 		Callback = function(v)
 			w:SetTheme(v)
 		end,

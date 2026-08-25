@@ -5278,7 +5278,10 @@ Id = "ui.theme",
 Title = "Toggle light/dark theme",
 Keywords = { "theme", "dark", "light" },
 Callback = function()
-window:SetTheme(theme:Current() == "Dark" and "Light" or "Dark")
+local target = theme:Counterpart()
+if target and target ~= theme:Current() then
+window:SetTheme(target)
+end
 end,
 })
 commands:Register({
@@ -6768,6 +6771,8 @@ options = options or {}
 local self = setmetatable({
 Changed = Signal.new("Theme.Changed"),
 _palettes = {},
+_meta = {},
+_recent = {},
 _name = nil,
 _base = nil,
 _resolved = nil,
@@ -6790,6 +6795,12 @@ palette = table.clone(palette)
 if palette.ScrimTransparency == nil then
 palette.ScrimTransparency = 0.52
 end
+self._meta[name] = {
+Appearance = (palette.Appearance == "Dark" or palette.Appearance == "Light") and palette.Appearance or nil,
+Pair = type(palette.Pair) == "string" and palette.Pair or nil,
+}
+palette.Appearance = nil
+palette.Pair = nil
 self._palettes[name] = palette
 if self._name == name then
 self:_resolve()
@@ -6805,6 +6816,12 @@ if name == self._name then
 error("[BobloUI] cannot unregister the active theme.", 2)
 end
 self._palettes[name] = nil
+self._meta[name] = nil
+for polarity, remembered in self._recent do
+if remembered == name then
+self._recent[polarity] = nil
+end
+end
 return self
 end
 function Theme:List(): { string }
@@ -6814,6 +6831,54 @@ return names
 end
 function Theme:Current(): string?
 return self._name
+end
+function Theme:Polarity(name: string?): string?
+local key = name or self._name
+local palette = self._palettes[key]
+if not palette then
+return nil
+end
+local meta = self._meta[key]
+if meta and meta.Appearance then
+return meta.Appearance
+end
+return if Util.luminance(palette.Canvas) < 0.5 then "Dark" else "Light"
+end
+function Theme:Counterpart(): string?
+local current = self._name
+if not current then
+return nil
+end
+local target = if self:Polarity(current) == "Dark" then "Light" else "Dark"
+local meta = self._meta[current]
+if meta and meta.Pair and self._palettes[meta.Pair] and self:Polarity(meta.Pair) == target then
+return meta.Pair
+end
+local remembered = self._recent[target]
+if remembered and self._palettes[remembered] and self:Polarity(remembered) == target then
+return remembered
+end
+if self._palettes[target] and self:Polarity(target) == target then
+return target
+end
+for _, candidate in self:List() do
+if self:Polarity(candidate) == target then
+return candidate
+end
+end
+return current
+end
+function Theme:RecentByPolarity(): { [string]: string }
+return table.clone(self._recent)
+end
+function Theme:RememberPolarity(polarity: string, name: string)
+if polarity ~= "Dark" and polarity ~= "Light" then
+return self
+end
+if self._palettes[name] and self:Polarity(name) == polarity then
+self._recent[polarity] = name
+end
+return self
 end
 function Theme:_resolve()
 local base = self._palettes[self._name]
@@ -6921,6 +6986,10 @@ if self._name == name then
 return
 end
 self._name = name
+local polarity = self:Polarity(name)
+if polarity then
+self._recent[polarity] = name
+end
 self:_resolve()
 self:_apply()
 self.Changed:Fire(name)
@@ -17910,6 +17979,13 @@ Icon = "swatch-book",
 Options = w.Theme:List(),
 Default = w.Theme:Current(),
 IgnoreConfig = true,
+FormatDisplayValue = function(value)
+local polarity = w.Theme:Polarity(value)
+if not polarity or value == polarity then
+return value
+end
+return `{value} · {polarity}`
+end,
 Callback = function(v)
 w:SetTheme(v)
 end,
@@ -18661,6 +18737,8 @@ if BASE_TOKEN_SET[token] and typeof(value) == "Color3" then
 out[token] = "#" .. value:ToHex()
 elseif token == "ScrimTransparency" and type(value) == "number" then
 out[token] = value
+elseif (token == "Appearance" or token == "Pair") and type(value) == "string" then
+out[token] = value
 end
 end
 return out
@@ -18674,6 +18752,8 @@ if ok then
 out[token] = color
 end
 elseif token == "ScrimTransparency" and type(value) == "number" then
+out[token] = value
+elseif (token == "Appearance" or token == "Pair") and type(value) == "string" then
 out[token] = value
 end
 end
@@ -18697,6 +18777,12 @@ elseif type(palette.ScrimTransparency) ~= "number" then
 return false, 'palette token "ScrimTransparency" must be number'
 end
 palette.ScrimTransparency = math.clamp(palette.ScrimTransparency, 0, 1)
+if palette.Appearance ~= nil and palette.Appearance ~= "Dark" and palette.Appearance ~= "Light" then
+return false, 'palette token "Appearance" must be "Dark" or "Light"'
+end
+if palette.Pair ~= nil and type(palette.Pair) ~= "string" then
+return false, 'palette token "Pair" must be a string'
+end
 return true
 end
 function ThemeManager.new(window, folder)
@@ -18708,6 +18794,42 @@ _default = nil,
 }, ThemeManager)
 self:ReloadCustomThemes()
 self:_loadDefaultMarker()
+self:_loadAppearanceMarker()
+self:_watchTheme()
+return self
+end
+function ThemeManager:_loadAppearanceMarker()
+local raw = self._storage:Read("appearance.json")
+if type(raw) ~= "string" or raw == "" then
+return self
+end
+local ok, data = pcall(HttpService.JSONDecode, HttpService, raw)
+if not ok or type(data) ~= "table" then
+return self
+end
+local theme = self._window.Theme
+for _, polarity in { "Dark", "Light" } do
+if type(data[polarity]) == "string" then
+theme:RememberPolarity(polarity, data[polarity])
+end
+end
+return self
+end
+function ThemeManager:_saveAppearanceMarker()
+local recent = self._window.Theme:RecentByPolarity()
+local ok, raw = pcall(HttpService.JSONEncode, HttpService, recent)
+if ok then
+self._storage:Write("appearance.json", raw)
+end
+return self
+end
+function ThemeManager:_watchTheme()
+local theme = self._window.Theme
+if theme and theme.Changed then
+self._appearanceConn = theme.Changed:Connect(function()
+self:_saveAppearanceMarker()
+end)
+end
 return self
 end
 function ThemeManager:_loadDefaultMarker()
@@ -18736,6 +18858,7 @@ self._storage = Storage.new(folder .. "/themes")
 self._default = nil
 self:ReloadCustomThemes()
 self:_loadDefaultMarker()
+self:_loadAppearanceMarker()
 return true
 end
 function ThemeManager:SaveCustomTheme(name, palette)
@@ -18769,7 +18892,8 @@ if not self._custom[name] then
 return false, "theme not found"
 end
 if self._window.Theme:Current() == name then
-self._window.Theme:Set("Dark")
+local polarity = self._window.Theme:Polarity(name)
+self._window.Theme:Set(if polarity == "Light" then "Light" else "Dark")
 end
 if not self._storage:Delete(self:_file(name)) then
 return false, "delete failed"
@@ -18867,6 +18991,10 @@ self._window.Theme:Set(self._default)
 return true
 end
 function ThemeManager:Destroy()
+if self._appearanceConn then
+self._appearanceConn:Disconnect()
+self._appearanceConn = nil
+end
 self._custom = {}
 end
 return ThemeManager
@@ -21523,7 +21651,10 @@ self._themeButton.BackgroundTransparency = 0.82
 end))
 self._janitor:Add(self._themeButton.MouseButton1Click:Connect(function()
 if self.SetTheme then
-self:SetTheme(self.Theme:Current() == "Dark" and "Light" or "Dark")
+local target = self.Theme:Counterpart()
+if target and target ~= self.Theme:Current() then
+self:SetTheme(target)
+end
 end
 end))
 self._minimizeButton = New("TextButton", {

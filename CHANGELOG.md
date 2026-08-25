@@ -1,3 +1,22 @@
+# Unreleased
+
+- Custom themes now take part in light/dark switching. Every palette has an
+  appearance polarity, derived from `Canvas` luminance and overridable with
+  `Appearance = "Dark" | "Light"`; an optional `Pair` names an explicit
+  counterpart. Both fields are metadata rather than colour tokens and survive
+  save/load.
+- The header theme button and the `ui.theme` command now resolve their target
+  through `Theme:Counterpart()` instead of hardcoding Dark/Light. The library
+  remembers the last theme used at each polarity and persists it, so toggling
+  away from a custom theme and back returns to that theme rather than a built-in.
+- Deleting the active custom theme now falls back to the built-in of the same
+  polarity; a deleted light theme no longer drops the user into a dark UI.
+- The Settings theme picker labels which polarity each theme belongs to.
+- Added `Theme:Polarity()`, `Theme:Counterpart()`, `Theme:RecentByPolarity()`
+  and `Theme:RememberPolarity()`.
+- Added `tests/theme.spec.lua` and a Color3 shim to the headless harness, wired
+  in as `npm run test:theme`.
+
 # 0.11.5-beta.1
 
 - Hardened the release theme contract: 26 author-selected colors plus numeric

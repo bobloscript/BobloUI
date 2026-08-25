@@ -5403,7 +5403,10 @@ function BobloUI:CreateWindow(options)
 		Title = "Toggle light/dark theme",
 		Keywords = { "theme", "dark", "light" },
 		Callback = function()
-			window:SetTheme(theme:Current() == "Dark" and "Light" or "Dark")
+			local target = theme:Counterpart()
+			if target and target ~= theme:Current() then
+				window:SetTheme(target)
+			end
 		end,
 	})
 	commands:Register({
@@ -7108,6 +7111,8 @@ function Theme.new(options)
 		Changed = Signal.new("Theme.Changed"),
 
 		_palettes = {},
+		_meta = {},
+		_recent = {},
 		_name = nil,
 		_base = nil,
 		_resolved = nil,
@@ -7137,6 +7142,15 @@ function Theme:Register(name: string, palette)
 		-- Compatibility for custom themes saved before the alpha token existed.
 		palette.ScrimTransparency = 0.52
 	end
+	-- Appearance/Pair describe the palette, they are not colour tokens. Keeping
+	-- them out of the palette means _resolve never sees a string where it
+	-- expects a Color3, and SetToken cannot be aimed at them.
+	self._meta[name] = {
+		Appearance = (palette.Appearance == "Dark" or palette.Appearance == "Light") and palette.Appearance or nil,
+		Pair = type(palette.Pair) == "string" and palette.Pair or nil,
+	}
+	palette.Appearance = nil
+	palette.Pair = nil
 	self._palettes[name] = palette
 	if self._name == name then
 		self:_resolve()
@@ -7152,6 +7166,12 @@ function Theme:Unregister(name)
 		error("[BobloUI] cannot unregister the active theme.", 2)
 	end
 	self._palettes[name] = nil
+	self._meta[name] = nil
+	for polarity, remembered in self._recent do
+		if remembered == name then
+			self._recent[polarity] = nil
+		end
+	end
 	return self
 end
 
@@ -7163,6 +7183,90 @@ end
 
 function Theme:Current(): string?
 	return self._name
+end
+
+-- ===== light/dark polarity ========================================
+--
+-- "Dark" and "Light" are the two built-in themes AND the two appearance
+-- polarities. Every registered palette belongs to one of them, so a custom
+-- theme takes part in light/dark switching without being named Dark or Light.
+--
+-- Polarity is derived from Canvas luminance — the same test _resolve uses for
+-- high contrast. A palette can override the guess with Appearance = "Dark" |
+-- "Light", which matters for saturated palettes sitting near the midpoint.
+
+function Theme:Polarity(name: string?): string?
+	local key = name or self._name
+	local palette = self._palettes[key]
+	if not palette then
+		return nil
+	end
+	local meta = self._meta[key]
+	if meta and meta.Appearance then
+		return meta.Appearance
+	end
+	return if Util.luminance(palette.Canvas) < 0.5 then "Dark" else "Light"
+end
+
+--[[
+	The theme a light/dark toggle should switch to, in priority order:
+
+	  1. the counterpart this theme declares via Pair
+	  2. the last theme the user actually used at that polarity
+	  3. the built-in Dark/Light
+	  4. any registered theme of that polarity
+
+	Rule 2 is what makes the toggle feel right. A user on their own dark theme
+	toggles to Light and back, and lands on *their* theme rather than the
+	built-in Dark. Once they have themes on both sides, the toggle moves between
+	those two and never shows a built-in again.
+
+	Returns the current theme when nothing of the opposite polarity exists, so
+	callers can always feed the result straight into Set.
+]]
+function Theme:Counterpart(): string?
+	local current = self._name
+	if not current then
+		return nil
+	end
+	local target = if self:Polarity(current) == "Dark" then "Light" else "Dark"
+
+	local meta = self._meta[current]
+	if meta and meta.Pair and self._palettes[meta.Pair] and self:Polarity(meta.Pair) == target then
+		return meta.Pair
+	end
+
+	local remembered = self._recent[target]
+	if remembered and self._palettes[remembered] and self:Polarity(remembered) == target then
+		return remembered
+	end
+
+	if self._palettes[target] and self:Polarity(target) == target then
+		return target
+	end
+
+	for _, candidate in self:List() do
+		if self:Polarity(candidate) == target then
+			return candidate
+		end
+	end
+	return current
+end
+
+-- Persistence hooks: ThemeManager restores these at startup so the toggle
+-- remembers across sessions instead of falling back to a built-in once.
+function Theme:RecentByPolarity(): { [string]: string }
+	return table.clone(self._recent)
+end
+
+function Theme:RememberPolarity(polarity: string, name: string)
+	if polarity ~= "Dark" and polarity ~= "Light" then
+		return self
+	end
+	if self._palettes[name] and self:Polarity(name) == polarity then
+		self._recent[polarity] = name
+	end
+	return self
 end
 
 -- Interaction and foreground tokens are derived once per theme application.
@@ -7291,6 +7395,10 @@ function Theme:Set(name: string)
 		return
 	end
 	self._name = name
+	local polarity = self:Polarity(name)
+	if polarity then
+		self._recent[polarity] = name
+	end
 	self:_resolve()
 	self:_apply()
 	self.Changed:Fire(name)
@@ -18837,6 +18945,15 @@ function Settings:_ensureMounted()
 		Options = w.Theme:List(),
 		Default = w.Theme:Current(),
 		IgnoreConfig = true,
+		-- Showing the polarity is what makes the light/dark toggle legible:
+		-- without it, users cannot tell why a switch landed where it did.
+		FormatDisplayValue = function(value)
+			local polarity = w.Theme:Polarity(value)
+			if not polarity or value == polarity then
+				return value
+			end
+			return `{value} · {polarity}`
+		end,
 		Callback = function(v)
 			w:SetTheme(v)
 		end,
@@ -19603,6 +19720,10 @@ local function encodePalette(palette)
 			out[token] = "#" .. value:ToHex()
 		elseif token == "ScrimTransparency" and type(value) == "number" then
 			out[token] = value
+		elseif (token == "Appearance" or token == "Pair") and type(value) == "string" then
+			-- Polarity metadata: without this, a saved theme loses its declared
+			-- light/dark side and falls back to luminance guessing on reload.
+			out[token] = value
 		end
 	end
 	return out
@@ -19616,6 +19737,8 @@ local function decodePalette(palette)
 				out[token] = color
 			end
 		elseif token == "ScrimTransparency" and type(value) == "number" then
+			out[token] = value
+		elseif (token == "Appearance" or token == "Pair") and type(value) == "string" then
 			out[token] = value
 		end
 	end
@@ -19639,6 +19762,12 @@ local function validatePalette(palette)
 		return false, 'palette token "ScrimTransparency" must be number'
 	end
 	palette.ScrimTransparency = math.clamp(palette.ScrimTransparency, 0, 1)
+	if palette.Appearance ~= nil and palette.Appearance ~= "Dark" and palette.Appearance ~= "Light" then
+		return false, 'palette token "Appearance" must be "Dark" or "Light"'
+	end
+	if palette.Pair ~= nil and type(palette.Pair) ~= "string" then
+		return false, 'palette token "Pair" must be a string'
+	end
 	return true
 end
 
@@ -19651,6 +19780,48 @@ function ThemeManager.new(window, folder)
 	}, ThemeManager)
 	self:ReloadCustomThemes()
 	self:_loadDefaultMarker()
+	self:_loadAppearanceMarker()
+	self:_watchTheme()
+	return self
+end
+
+-- The light/dark toggle remembers the last theme used on each side. Persisting
+-- it is what stops the first toggle of a new session from dropping the user
+-- onto a built-in theme they had already replaced.
+function ThemeManager:_loadAppearanceMarker()
+	local raw = self._storage:Read("appearance.json")
+	if type(raw) ~= "string" or raw == "" then
+		return self
+	end
+	local ok, data = pcall(HttpService.JSONDecode, HttpService, raw)
+	if not ok or type(data) ~= "table" then
+		return self
+	end
+	local theme = self._window.Theme
+	for _, polarity in { "Dark", "Light" } do
+		if type(data[polarity]) == "string" then
+			theme:RememberPolarity(polarity, data[polarity])
+		end
+	end
+	return self
+end
+
+function ThemeManager:_saveAppearanceMarker()
+	local recent = self._window.Theme:RecentByPolarity()
+	local ok, raw = pcall(HttpService.JSONEncode, HttpService, recent)
+	if ok then
+		self._storage:Write("appearance.json", raw)
+	end
+	return self
+end
+
+function ThemeManager:_watchTheme()
+	local theme = self._window.Theme
+	if theme and theme.Changed then
+		self._appearanceConn = theme.Changed:Connect(function()
+			self:_saveAppearanceMarker()
+		end)
+	end
 	return self
 end
 
@@ -19683,6 +19854,7 @@ function ThemeManager:SetFolder(folder)
 	self._default = nil
 	self:ReloadCustomThemes()
 	self:_loadDefaultMarker()
+	self:_loadAppearanceMarker()
 	return true
 end
 
@@ -19718,7 +19890,10 @@ function ThemeManager:DeleteCustomTheme(name)
 		return false, "theme not found"
 	end
 	if self._window.Theme:Current() == name then
-		self._window.Theme:Set("Dark")
+		-- Read the polarity while the palette is still registered: deleting a
+		-- light theme should land on Light, not flip the user to a dark UI.
+		local polarity = self._window.Theme:Polarity(name)
+		self._window.Theme:Set(if polarity == "Light" then "Light" else "Dark")
 	end
 	if not self._storage:Delete(self:_file(name)) then
 		return false, "delete failed"
@@ -19826,6 +20001,10 @@ function ThemeManager:LoadDefault()
 end
 
 function ThemeManager:Destroy()
+	if self._appearanceConn then
+		self._appearanceConn:Disconnect()
+		self._appearanceConn = nil
+	end
 	self._custom = {}
 end
 
@@ -22613,7 +22792,10 @@ function WindowChrome:_buildHeader()
 	end))
 	self._janitor:Add(self._themeButton.MouseButton1Click:Connect(function()
 		if self.SetTheme then
-			self:SetTheme(self.Theme:Current() == "Dark" and "Light" or "Dark")
+			local target = self.Theme:Counterpart()
+			if target and target ~= self.Theme:Current() then
+				self:SetTheme(target)
+			end
 		end
 	end))
 

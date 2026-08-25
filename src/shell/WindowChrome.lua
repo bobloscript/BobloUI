@@ -245,7 +245,10 @@ function WindowChrome:_buildHeader()
 	end))
 	self._janitor:Add(self._themeButton.MouseButton1Click:Connect(function()
 		if self.SetTheme then
-			self:SetTheme(self.Theme:Current() == "Dark" and "Light" or "Dark")
+			local target = self.Theme:Counterpart()
+			if target and target ~= self.Theme:Current() then
+				self:SetTheme(target)
+			end
 		end
 	end))
 

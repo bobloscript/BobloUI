@@ -29,6 +29,8 @@ function Theme.new(options)
 		Changed = Signal.new("Theme.Changed"),
 
 		_palettes = {},
+		_meta = {},
+		_recent = {},
 		_name = nil,
 		_base = nil,
 		_resolved = nil,
@@ -58,6 +60,15 @@ function Theme:Register(name: string, palette)
 		-- Compatibility for custom themes saved before the alpha token existed.
 		palette.ScrimTransparency = 0.52
 	end
+	-- Appearance/Pair describe the palette, they are not colour tokens. Keeping
+	-- them out of the palette means _resolve never sees a string where it
+	-- expects a Color3, and SetToken cannot be aimed at them.
+	self._meta[name] = {
+		Appearance = (palette.Appearance == "Dark" or palette.Appearance == "Light") and palette.Appearance or nil,
+		Pair = type(palette.Pair) == "string" and palette.Pair or nil,
+	}
+	palette.Appearance = nil
+	palette.Pair = nil
 	self._palettes[name] = palette
 	if self._name == name then
 		self:_resolve()
@@ -73,6 +84,12 @@ function Theme:Unregister(name)
 		error("[BobloUI] cannot unregister the active theme.", 2)
 	end
 	self._palettes[name] = nil
+	self._meta[name] = nil
+	for polarity, remembered in self._recent do
+		if remembered == name then
+			self._recent[polarity] = nil
+		end
+	end
 	return self
 end
 
@@ -84,6 +101,90 @@ end
 
 function Theme:Current(): string?
 	return self._name
+end
+
+-- ===== light/dark polarity ========================================
+--
+-- "Dark" and "Light" are the two built-in themes AND the two appearance
+-- polarities. Every registered palette belongs to one of them, so a custom
+-- theme takes part in light/dark switching without being named Dark or Light.
+--
+-- Polarity is derived from Canvas luminance — the same test _resolve uses for
+-- high contrast. A palette can override the guess with Appearance = "Dark" |
+-- "Light", which matters for saturated palettes sitting near the midpoint.
+
+function Theme:Polarity(name: string?): string?
+	local key = name or self._name
+	local palette = self._palettes[key]
+	if not palette then
+		return nil
+	end
+	local meta = self._meta[key]
+	if meta and meta.Appearance then
+		return meta.Appearance
+	end
+	return if Util.luminance(palette.Canvas) < 0.5 then "Dark" else "Light"
+end
+
+--[[
+	The theme a light/dark toggle should switch to, in priority order:
+
+	  1. the counterpart this theme declares via Pair
+	  2. the last theme the user actually used at that polarity
+	  3. the built-in Dark/Light
+	  4. any registered theme of that polarity
+
+	Rule 2 is what makes the toggle feel right. A user on their own dark theme
+	toggles to Light and back, and lands on *their* theme rather than the
+	built-in Dark. Once they have themes on both sides, the toggle moves between
+	those two and never shows a built-in again.
+
+	Returns the current theme when nothing of the opposite polarity exists, so
+	callers can always feed the result straight into Set.
+]]
+function Theme:Counterpart(): string?
+	local current = self._name
+	if not current then
+		return nil
+	end
+	local target = if self:Polarity(current) == "Dark" then "Light" else "Dark"
+
+	local meta = self._meta[current]
+	if meta and meta.Pair and self._palettes[meta.Pair] and self:Polarity(meta.Pair) == target then
+		return meta.Pair
+	end
+
+	local remembered = self._recent[target]
+	if remembered and self._palettes[remembered] and self:Polarity(remembered) == target then
+		return remembered
+	end
+
+	if self._palettes[target] and self:Polarity(target) == target then
+		return target
+	end
+
+	for _, candidate in self:List() do
+		if self:Polarity(candidate) == target then
+			return candidate
+		end
+	end
+	return current
+end
+
+-- Persistence hooks: ThemeManager restores these at startup so the toggle
+-- remembers across sessions instead of falling back to a built-in once.
+function Theme:RecentByPolarity(): { [string]: string }
+	return table.clone(self._recent)
+end
+
+function Theme:RememberPolarity(polarity: string, name: string)
+	if polarity ~= "Dark" and polarity ~= "Light" then
+		return self
+	end
+	if self._palettes[name] and self:Polarity(name) == polarity then
+		self._recent[polarity] = name
+	end
+	return self
 end
 
 -- Interaction and foreground tokens are derived once per theme application.
@@ -212,6 +313,10 @@ function Theme:Set(name: string)
 		return
 	end
 	self._name = name
+	local polarity = self:Polarity(name)
+	if polarity then
+		self._recent[polarity] = name
+	end
 	self:_resolve()
 	self:_apply()
 	self.Changed:Fire(name)

@@ -686,7 +686,10 @@ function BobloUI:CreateWindow(options)
 		Title = "Toggle light/dark theme",
 		Keywords = { "theme", "dark", "light" },
 		Callback = function()
-			window:SetTheme(theme:Current() == "Dark" and "Light" or "Dark")
+			local target = theme:Counterpart()
+			if target and target ~= theme:Current() then
+				window:SetTheme(target)
+			end
 		end,
 	})
 	commands:Register({

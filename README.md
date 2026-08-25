@@ -4,6 +4,15 @@ Responsive, AI-first UI framework for Roblox script hubs.
 
 **Current release: `0.11.5-beta.1`.** The public API, controls, state, config, search/command palette, mobile layouts and AI artifacts are implemented. The remaining gate before `1.0` is runtime validation in Roblox Studio/executors across desktop and touch devices.
 
+## Documentation
+
+- [docs/getting-started.md](docs/getting-started.md) — build a first hub, step by step
+- [docs/controls.md](docs/controls.md) — all sixteen controls with examples
+- [docs/end-user.md](docs/end-user.md) — what players can do in any hub: shortcuts, Settings, configs, Favorites
+- [docs/extending.md](docs/extending.md) — changing BobloUI itself: build pipeline, layers, adding controls
+- [docs/troubleshooting.md](docs/troubleshooting.md) — icons, configs, performance
+- [docs/index.md](docs/index.md) — full map, including generated per-control references
+
 ## Install
 
 Host `dist/BobloUI.min.lua` (or `dist/BobloUI.lua`) and the generated
