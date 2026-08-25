@@ -1,0 +1,695 @@
+# BobloUI 0.11.5-beta.1
+
+Load:
+local BobloUI = loadstring(game:HttpGet(URL))()
+local UI = BobloUI:CreateWindow({Id="hub", Title="Hub"})
+local Tab = UI:AddTab({Id="main", Title="Main"})
+local Section = Tab:AddSection({Title="Automation"})
+
+Constructors:
+- AddButton({...}) — Action button.
+- AddToggle({...}) — Boolean switch bound to State.
+- AddSlider({...}) — Numeric slider.
+- AddDropdown({...}) — Single or multi-select dropdown.
+- AddInput({...}) — Text or numeric input.
+- AddKeybind({...}) — Chord-capable keyboard/mobile binding with custom modes.
+- AddColorPicker({...}) — Color selector with HEX/RGB entry.
+- AddParagraph({...}) — Rich explanatory text; omit Title for label-like text.
+- AddDivider({...}) — Visual separator with optional title.
+- AddStatus({...}) — Read-only live status indicator; may read State by Id but is never persisted.
+- AddProgress({...}) — Determinate or indeterminate progress bar.
+- AddCode({...}) — Read-only code block with optional copy action.
+- AddImage({...}) — Image/media block using Roblox asset content.
+- AddPassthrough({...}) — Host an existing Roblox GuiObject.
+- AddViewport({...}) — Interactive 3D ViewportFrame control.
+- AddVideo({...}) — VideoFrame control with playback API.
+
+Common control methods: GetValue, SetValue, Reset, CopyValue, PasteValue (when clipboard read is available), SetTitle, SetDescription, SetVisible, SetDisabled, SetLoading, SetBadge, Highlight, Reveal, OnChanged, Destroy. Some stateless presentation controls intentionally expose only meaningful methods; see llms-full.txt.
+
+State: UI.State:Get/Set/Update/Watch/WatchMany/Batch/Reset/Snapshot.
+Dependencies: VisibleWhen={OtherId=true} or VisibleWhen=function(State) return State:Get("OtherId") end. Controls, Sections, Rows and TabBoxes support reactive visibility/enabled state.
+Config: UI.Config exists only when ConfigFolder is set; Save/Load/List/Delete/Rename/Duplicate/Export/Import/SetAutoLoad/LoadAuto.
+Palette: UI:OpenSearch(), UI:OpenCommands(); Ctrl+K; prefixes > commands, @ tabs, # configs, * favorites.
+Layout: Sections support Icon, Span="Auto"|1|2 and Layout="Stack"|"Grid"|"Auto"; controls support Adaptive=true. Tabs support Group.
+Appearance: Dark/Light built-ins, saved custom themes, custom 26-color palettes plus scrim alpha, WCAG-derived foregrounds, runtime font, sidebar width, compact mode and granular animations.
+Icons: 1,756 bundled Lucide names through Icon="sword". The two BobloScript-owned PNG atlases are cached from GitHub and registered as executor-local assets; use BobloUI.Icon.List/Has/Resolve/GetStatus/Retry. Asset-free fallback icons remain available.
+Navigation: keyboard Tab/Shift+Tab and gamepad D-pad/A/B; keybinds support modifier chords, custom modes, attachment and mobile HUD actions.
+Data sources: Dropdown Source can be a getter/function or BobloUI.Sources.Players({...}); dictionary Values with Multi=true use map results unless MultiValueMode="Array".
+HUD: UI:SetWatermark, UI:SetKeybindHUD; draggable labels/buttons/menus are public overlays. Loading supports stages, error actions and a control sidebar.
+Window extras: UI:AddTopbarButton, UI:AddTopbarTag, UI:SetFooterText, UI:SetSidebarWidth, UI:SetCompact, UI:SetFont, UI:SetAnimations, UI:SetResponsiveThresholds, UI:SetSearchbarSize, UI:SetTabSwipe and media/background APIs.
+Settings: built-in Settings tab includes themes, config profiles, favorites, keybinds, accessibility and window preferences.
+Declarative: UI:Build({Tabs={...}}) validates the complete descriptor before creating anything.
+
+RULES
+- Only the constructors listed above exist. There is NO AddLabel, AddMultiDropdown or AddTextbox.
+- Multi-select uses AddDropdown({Multi=true}).
+- Every stateful control intended for State/Config needs a globally unique Id.
+- Sections are created on Tabs. Controls may also be added directly to a Tab (implicit section).
+- Use documented methods, not internal fields.
+
+# Component reference
+
+## Button / AddButton
+Action button.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Text: string?
+- Variant: string?
+- Confirm: string?
+- Risky: boolean?
+- DoubleClick: boolean?
+- DoubleClickWindow: number?
+- SubButtons: table?
+- Actions: table?
+
+Specific methods:
+- Click — Programmatically invoke the button action.
+- AddAction — Append an attached sub-action button.
+- AddKeybind — Attach a Keybind control to this button.
+
+## Toggle / AddToggle
+Boolean switch bound to State.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Default: boolean?
+- Style: string?
+
+Specific methods:
+- Flip — Invert the current boolean value.
+
+## Slider / AddSlider
+Numeric slider.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Min: number (required)
+- Max: number (required)
+- Default: number?
+- Step: number?
+- Precision: number?
+- Rounding: number?
+- Prefix: string?
+- Suffix: string?
+- Format: function?
+- FormatDisplayValue: function?
+- ValueInput: boolean?
+- AllowRightClickInput: boolean?
+- FloatingValue: boolean?
+- Compact: boolean?
+- HideMax: boolean?
+- IconFrom: string?
+- IconTo: string?
+
+Specific methods:
+- SetMin — Change the minimum and clamp the current value.
+- SetMax — Change the maximum and clamp the current value.
+- SetStep — Change the numeric step.
+- SetPrefix — Change the displayed prefix.
+- SetSuffix — Change the displayed suffix.
+
+## Dropdown / AddDropdown
+Single or multi-select dropdown.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Options: table?
+- Values: table?
+- Default: any?
+- Multi: boolean?
+- MultiValueMode: string?
+- Map: boolean?
+- ReturnMap: boolean?
+- Searchable: boolean?
+- AllowNone: boolean?
+- AllowNull: boolean?
+- Max: number?
+- Placeholder: string?
+- Style: string?
+- Source: any?
+- MaxVisibleRows: number?
+- MaxVisibleDropdownItems: number?
+- DragSelect: boolean?
+- DisabledValues: table?
+- ValueImages: table?
+- Images: table?
+- FormatDisplayValue: function?
+- FormatListValue: function?
+- FormatValue: function?
+- FormatOption: function?
+
+Specific methods:
+- SetOptions — Replace all choices.
+- SetValues — Replace all choices from an array or dictionary.
+- AddOption — Append one choice.
+- AddValues — Append or merge choices.
+- RemoveOption — Remove a choice by value.
+- Refresh — Refresh the open list or replace choices.
+- Open — Open the picker.
+- Close — Close the picker.
+- SetDisabledValues — Replace disabled value list.
+- AddDisabledValues — Append one or more disabled values.
+- SetValueDisabled — Disable or enable one value.
+- SetValueImage — Set one value image.
+- SetValueImages — Replace the value image map.
+- AddValueImages — Merge entries into the value image map.
+- SetDragSelect — Enable or disable multi-value drag selection.
+- GetActiveValues — Read the selected value set or its count.
+- SetMaxVisibleRows — Set popup row limit.
+- SetFormatters — Set display and list formatters.
+
+## Input / AddInput
+Text or numeric input.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Default: string|number?
+- Placeholder: string?
+- Numeric: boolean?
+- MaxLength: number?
+- Multiline: boolean?
+- ClearOnFocus: boolean?
+- ClearTextOnFocus: boolean?
+- ClearTextOnBlur: boolean?
+- AllowEmpty: boolean?
+- EmptyReset: string|number?
+- Validate: function?
+- VerifyValue: function?
+- Finished: boolean?
+- CommitOn: string?
+- Height: number?
+
+Specific methods:
+- Focus — Capture text focus.
+- Blur — Release text focus.
+- Clear — Reset to an empty string or zero.
+- SetAllowEmpty — Enable or disable empty values and optionally change the reset value.
+- SetError — Show or clear a validation error state.
+
+## Keybind / AddKeybind
+Chord-capable keyboard/mobile binding with custom modes.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Default: any?
+- Mode: string?
+- AllowedModes: table?
+- Blacklist: table?
+- Blacklisted: table?
+- Whitelist: table?
+- Whitelisted: table?
+- Modifiers: table?
+- DefaultModifiers: table?
+- ModifierWhitelist: table?
+- WhitelistedModifiers: table?
+- ModifierBlacklist: table?
+- BlacklistModifiers: table?
+- BlacklistedModifiers: table?
+- ExactModifiers: boolean?
+- CustomModes: table?
+- Modes: table?
+- AttachTo: any?
+- SyncToggle: boolean?
+- SyncToggleState: boolean?
+- WaitForCallback: boolean?
+- ChangedCallback: function?
+- Clicked: function?
+- NoUI: boolean?
+- Mobile: boolean?
+- MobileText: string?
+
+Specific methods:
+- SetMode — Change Toggle/Hold/Always mode.
+- IsActive — Return current active state.
+- Capture — Capture the next key.
+- Cancel — Cancel key capture.
+- Focus — Alias of Capture for keyboard focus semantics.
+- SetKey — Set primary key and optional modifiers.
+- SetModifiers — Replace modifier chord.
+- GetModifiers — Read modifier chord.
+- Attach — Attach this binding to a control.
+- Trigger — Trigger from touch or code.
+
+## ColorPicker / AddColorPicker
+Color selector with HEX/RGB entry.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Default: Color3?
+- Alpha: boolean?
+- DefaultAlpha: number?
+- Presets: table?
+
+Specific methods:
+- Open — Open the picker.
+- Close — Close the picker.
+- SetAlpha — Set alpha from 0 to 1 when Alpha is enabled.
+- GetAlpha — Read alpha.
+
+## Paragraph / AddParagraph
+Rich explanatory text; omit Title for label-like text.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Content: string?
+- Variant: string?
+- RichText: boolean?
+- DoesWrap: boolean?
+- Wrap: boolean?
+- Size: number?
+
+Specific methods:
+- SetContent — Replace paragraph content.
+- SetRichText — Enable or disable Roblox RichText rendering.
+- SetWrap — Enable or disable text wrapping.
+- SetSize — Set a manual content text size or restore the theme size.
+
+## Divider / AddDivider
+Visual separator with optional title.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Text: string?
+- Margin: number?
+- MarginTop: number?
+- MarginBottom: number?
+
+Specific methods:
+- SetMargins — Set the top and bottom whitespace around the divider.
+
+## Status / AddStatus
+Read-only live status indicator; may read State by Id but is never persisted.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Value: any?
+- Status: string?
+- Pulse: boolean?
+
+Specific methods:
+- SetStatus — Change Neutral/Success/Warning/Error/Info/Pending state.
+
+## Progress / AddProgress
+Determinate or indeterminate progress bar.
+
+Stateful: yes
+
+Options:
+- Id: string?
+- Title: string? (required)
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Min: number?
+- Max: number?
+- Default: number?
+- Suffix: string?
+- ShowValue: boolean?
+- Indeterminate: boolean?
+- Format: function?
+
+Specific methods:
+- SetIndeterminate — Enable or disable indeterminate animation.
+
+## Code / AddCode
+Read-only code block with optional copy action.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Code: string?
+- Content: string?
+- Language: string?
+- Height: number?
+- Copy: boolean?
+
+Specific methods:
+- SetCode — Replace displayed code.
+- GetCode — Read displayed code.
+- CopyCode — Copy code to clipboard when supported.
+
+## Image / AddImage
+Image/media block using Roblox asset content.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Image: string (required)
+- Height: number?
+- Caption: string?
+- ScaleType: EnumItem?
+- Tint: Color3?
+- ImageColor3: Color3?
+- Transparency: number?
+- ImageTransparency: number?
+- BackgroundTransparency: number?
+- RectOffset: Vector2?
+- RectSize: Vector2?
+- ImageRectOffset: Vector2?
+- ImageRectSize: Vector2?
+
+Specific methods:
+- SetImage — Replace image asset.
+- SetCaption — Replace caption.
+- SetHeight — Resize image block.
+- SetTint — Set image tint.
+- SetTransparency — Set image/background transparency.
+- SetRect — Set sprite rectangle.
+- SetScaleType — Set ScaleType.
+
+## Passthrough / AddPassthrough
+Host an existing Roblox GuiObject.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Instance: Instance (required)
+- Height: number?
+- Fill: boolean?
+- Clone: boolean?
+- DestroyInstance: boolean?
+
+Specific methods:
+- SetInstance — Replace hosted GuiObject.
+- GetContentInstance — Read hosted GuiObject.
+- SetHeight — Resize passthrough block.
+
+## Viewport / AddViewport
+Interactive 3D ViewportFrame control.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Object: Instance (required)
+- Clone: boolean?
+- DestroyObject: boolean?
+- Camera: Instance?
+- Interactive: boolean?
+- AutoFocus: boolean?
+- Height: number?
+
+Specific methods:
+- SetObject — Replace displayed 3D object.
+- SetCamera — Replace viewport camera.
+- SetInteractive — Enable orbit and zoom.
+- SetHeight — Resize viewport.
+- Focus — Focus camera on object bounds.
+
+## Video / AddVideo
+VideoFrame control with playback API.
+
+Stateful: no
+
+Options:
+- Id: string?
+- Title: string?
+- Description: string?
+- Keywords: table?
+- Badge: string?
+- Disabled: boolean|string?
+- Visible: boolean?
+- VisibleWhen: table|function?
+- EnabledWhen: table|function?
+- IgnoreConfig: boolean?
+- Order: number?
+- Callback: function?
+- Tooltip: string|function?
+- ContextMenu: table?
+- Adaptive: boolean?
+- Icon: string?
+- IconColor: string|Color3?
+- Video: string (required)
+- Looped: boolean?
+- Playing: boolean?
+- Volume: number?
+- Height: number?
+
+Specific methods:
+- SetVideo — Replace video source.
+- SetLooped — Set looping.
+- SetPlaying — Set playback state.
+- SetVolume — Set volume.
+- Play — Start playback.
+- Pause — Pause playback.
+- SetHeight — Resize video.

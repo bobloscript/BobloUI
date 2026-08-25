@@ -1,0 +1,48 @@
+# BobloUI 0.11.5-beta.1
+
+Load:
+local BobloUI = loadstring(game:HttpGet(URL))()
+local UI = BobloUI:CreateWindow({Id="hub", Title="Hub"})
+local Tab = UI:AddTab({Id="main", Title="Main"})
+local Section = Tab:AddSection({Title="Automation"})
+
+Constructors:
+- AddButton({...}) — Action button.
+- AddToggle({...}) — Boolean switch bound to State.
+- AddSlider({...}) — Numeric slider.
+- AddDropdown({...}) — Single or multi-select dropdown.
+- AddInput({...}) — Text or numeric input.
+- AddKeybind({...}) — Chord-capable keyboard/mobile binding with custom modes.
+- AddColorPicker({...}) — Color selector with HEX/RGB entry.
+- AddParagraph({...}) — Rich explanatory text; omit Title for label-like text.
+- AddDivider({...}) — Visual separator with optional title.
+- AddStatus({...}) — Read-only live status indicator; may read State by Id but is never persisted.
+- AddProgress({...}) — Determinate or indeterminate progress bar.
+- AddCode({...}) — Read-only code block with optional copy action.
+- AddImage({...}) — Image/media block using Roblox asset content.
+- AddPassthrough({...}) — Host an existing Roblox GuiObject.
+- AddViewport({...}) — Interactive 3D ViewportFrame control.
+- AddVideo({...}) — VideoFrame control with playback API.
+
+Common control methods: GetValue, SetValue, Reset, CopyValue, PasteValue (when clipboard read is available), SetTitle, SetDescription, SetVisible, SetDisabled, SetLoading, SetBadge, Highlight, Reveal, OnChanged, Destroy. Some stateless presentation controls intentionally expose only meaningful methods; see llms-full.txt.
+
+State: UI.State:Get/Set/Update/Watch/WatchMany/Batch/Reset/Snapshot.
+Dependencies: VisibleWhen={OtherId=true} or VisibleWhen=function(State) return State:Get("OtherId") end. Controls, Sections, Rows and TabBoxes support reactive visibility/enabled state.
+Config: UI.Config exists only when ConfigFolder is set; Save/Load/List/Delete/Rename/Duplicate/Export/Import/SetAutoLoad/LoadAuto.
+Palette: UI:OpenSearch(), UI:OpenCommands(); Ctrl+K; prefixes > commands, @ tabs, # configs, * favorites.
+Layout: Sections support Icon, Span="Auto"|1|2 and Layout="Stack"|"Grid"|"Auto"; controls support Adaptive=true. Tabs support Group.
+Appearance: Dark/Light built-ins, saved custom themes, custom 26-color palettes plus scrim alpha, WCAG-derived foregrounds, runtime font, sidebar width, compact mode and granular animations.
+Icons: 1,756 bundled Lucide names through Icon="sword". The two BobloScript-owned PNG atlases are cached from GitHub and registered as executor-local assets; use BobloUI.Icon.List/Has/Resolve/GetStatus/Retry. Asset-free fallback icons remain available.
+Navigation: keyboard Tab/Shift+Tab and gamepad D-pad/A/B; keybinds support modifier chords, custom modes, attachment and mobile HUD actions.
+Data sources: Dropdown Source can be a getter/function or BobloUI.Sources.Players({...}); dictionary Values with Multi=true use map results unless MultiValueMode="Array".
+HUD: UI:SetWatermark, UI:SetKeybindHUD; draggable labels/buttons/menus are public overlays. Loading supports stages, error actions and a control sidebar.
+Window extras: UI:AddTopbarButton, UI:AddTopbarTag, UI:SetFooterText, UI:SetSidebarWidth, UI:SetCompact, UI:SetFont, UI:SetAnimations, UI:SetResponsiveThresholds, UI:SetSearchbarSize, UI:SetTabSwipe and media/background APIs.
+Settings: built-in Settings tab includes themes, config profiles, favorites, keybinds, accessibility and window preferences.
+Declarative: UI:Build({Tabs={...}}) validates the complete descriptor before creating anything.
+
+RULES
+- Only the constructors listed above exist. There is NO AddLabel, AddMultiDropdown or AddTextbox.
+- Multi-select uses AddDropdown({Multi=true}).
+- Every stateful control intended for State/Config needs a globally unique Id.
+- Sections are created on Tabs. Controls may also be added directly to a Tab (implicit section).
+- Use documented methods, not internal fields.

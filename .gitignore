@@ -1,0 +1,14 @@
+# Python bytecode from the test harness
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
+npm-debug.log*
+*.log
+
+# Editors and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

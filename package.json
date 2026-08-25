@@ -1,0 +1,17 @@
+{
+  "name": "bobloui",
+  "version": "0.11.5-beta.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node build/generate.mjs && node build/bundle.mjs --check",
+    "build": "node build/generate.mjs && node build/bundle.mjs --min",
+    "format": "node build/format.mjs",
+    "format:check": "node build/format.mjs --check",
+    "generate": "node build/generate.mjs",
+    "test:static": "npm run build && node tests/static.mjs",
+    "test:syntax": "python3 luaucheck.py",
+    "test:store": "python3 harness.py tests/store.spec.lua",
+    "test": "npm run test:syntax && npm run test:store && npm run test:static"
+  }
+}

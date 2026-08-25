@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install --yes lua5.3
+      - name: Check source formatting
+        uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: v2.5.2
+          args: --no-ignore-vcs --check src src/runtime/RuntimeManifest.lua src/schema/Manifest.lua
+      - run: npm run check
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BobloUI-dist
+          path: |
+            dist/BobloUI.lua
+            dist/BobloUI.min.lua
+            dist/assets/bobloui/lucide-1.png
+            dist/assets/bobloui/lucide-2.png
+            dist/LUCIDE_ICON_INDEX.txt
+            dist/THIRD_PARTY_LICENSES.txt
+            llms.txt
+            api.json
+            schema.json

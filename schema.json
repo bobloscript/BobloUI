@@ -1,0 +1,3704 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BobloUI declarative schema",
+  "type": "object",
+  "required": [
+    "Tabs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "Tabs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "Title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Icon": {
+            "type": "string"
+          },
+          "Badge": {
+            "type": "string"
+          },
+          "Group": {
+            "type": "string"
+          },
+          "Order": {
+            "type": "number"
+          },
+          "Visible": {
+            "type": "boolean"
+          },
+          "Locked": {
+            "type": "boolean"
+          },
+          "LockedReason": {
+            "type": "string"
+          },
+          "Controls": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Button"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Text": {
+                      "type": "string"
+                    },
+                    "Variant": {
+                      "type": "string"
+                    },
+                    "Confirm": {
+                      "type": "string"
+                    },
+                    "Risky": {
+                      "type": "boolean"
+                    },
+                    "DoubleClick": {
+                      "type": "boolean"
+                    },
+                    "DoubleClickWindow": {
+                      "type": "number"
+                    },
+                    "SubButtons": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Actions": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Toggle"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Default": {
+                      "type": "boolean"
+                    },
+                    "Style": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title",
+                    "Min",
+                    "Max"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Slider"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Min": {
+                      "type": "number"
+                    },
+                    "Max": {
+                      "type": "number"
+                    },
+                    "Default": {
+                      "type": "number"
+                    },
+                    "Step": {
+                      "type": "number"
+                    },
+                    "Precision": {
+                      "type": "number"
+                    },
+                    "Rounding": {
+                      "type": "number"
+                    },
+                    "Prefix": {
+                      "type": "string"
+                    },
+                    "Suffix": {
+                      "type": "string"
+                    },
+                    "Format": {},
+                    "FormatDisplayValue": {},
+                    "ValueInput": {
+                      "type": "boolean"
+                    },
+                    "AllowRightClickInput": {
+                      "type": "boolean"
+                    },
+                    "FloatingValue": {
+                      "type": "boolean"
+                    },
+                    "Compact": {
+                      "type": "boolean"
+                    },
+                    "HideMax": {
+                      "type": "boolean"
+                    },
+                    "IconFrom": {
+                      "type": "string"
+                    },
+                    "IconTo": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Dropdown"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Options": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Values": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Default": {},
+                    "Multi": {
+                      "type": "boolean"
+                    },
+                    "MultiValueMode": {
+                      "type": "string"
+                    },
+                    "Map": {
+                      "type": "boolean"
+                    },
+                    "ReturnMap": {
+                      "type": "boolean"
+                    },
+                    "Searchable": {
+                      "type": "boolean"
+                    },
+                    "AllowNone": {
+                      "type": "boolean"
+                    },
+                    "AllowNull": {
+                      "type": "boolean"
+                    },
+                    "Max": {
+                      "type": "number"
+                    },
+                    "Placeholder": {
+                      "type": "string"
+                    },
+                    "Style": {
+                      "type": "string"
+                    },
+                    "Source": {},
+                    "MaxVisibleRows": {
+                      "type": "number"
+                    },
+                    "MaxVisibleDropdownItems": {
+                      "type": "number"
+                    },
+                    "DragSelect": {
+                      "type": "boolean"
+                    },
+                    "DisabledValues": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "ValueImages": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Images": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "FormatDisplayValue": {},
+                    "FormatListValue": {},
+                    "FormatValue": {},
+                    "FormatOption": {}
+                  },
+                  "anyOf": [
+                    {
+                      "required": [
+                        "Options"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "Values"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "Source"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Input"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Default": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "Placeholder": {
+                      "type": "string"
+                    },
+                    "Numeric": {
+                      "type": "boolean"
+                    },
+                    "MaxLength": {
+                      "type": "number"
+                    },
+                    "Multiline": {
+                      "type": "boolean"
+                    },
+                    "ClearOnFocus": {
+                      "type": "boolean"
+                    },
+                    "ClearTextOnFocus": {
+                      "type": "boolean"
+                    },
+                    "ClearTextOnBlur": {
+                      "type": "boolean"
+                    },
+                    "AllowEmpty": {
+                      "type": "boolean"
+                    },
+                    "EmptyReset": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "Validate": {},
+                    "VerifyValue": {},
+                    "Finished": {
+                      "type": "boolean"
+                    },
+                    "CommitOn": {
+                      "type": "string"
+                    },
+                    "Height": {
+                      "type": "number"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Keybind"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Default": {},
+                    "Mode": {
+                      "type": "string"
+                    },
+                    "AllowedModes": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Blacklist": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Blacklisted": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Whitelist": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Whitelisted": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Modifiers": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "DefaultModifiers": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "ModifierWhitelist": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "WhitelistedModifiers": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "ModifierBlacklist": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "BlacklistModifiers": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "BlacklistedModifiers": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "ExactModifiers": {
+                      "type": "boolean"
+                    },
+                    "CustomModes": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Modes": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "AttachTo": {},
+                    "SyncToggle": {
+                      "type": "boolean"
+                    },
+                    "SyncToggleState": {
+                      "type": "boolean"
+                    },
+                    "WaitForCallback": {
+                      "type": "boolean"
+                    },
+                    "ChangedCallback": {},
+                    "Clicked": {},
+                    "NoUI": {
+                      "type": "boolean"
+                    },
+                    "Mobile": {
+                      "type": "boolean"
+                    },
+                    "MobileText": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "ColorPicker"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Default": {},
+                    "Alpha": {
+                      "type": "boolean"
+                    },
+                    "DefaultAlpha": {
+                      "type": "number"
+                    },
+                    "Presets": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Paragraph"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Content": {
+                      "type": "string"
+                    },
+                    "Variant": {
+                      "type": "string"
+                    },
+                    "RichText": {
+                      "type": "boolean"
+                    },
+                    "DoesWrap": {
+                      "type": "boolean"
+                    },
+                    "Wrap": {
+                      "type": "boolean"
+                    },
+                    "Size": {
+                      "type": "number"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Divider"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Text": {
+                      "type": "string"
+                    },
+                    "Margin": {
+                      "type": "number"
+                    },
+                    "MarginTop": {
+                      "type": "number"
+                    },
+                    "MarginBottom": {
+                      "type": "number"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Status"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Value": {},
+                    "Status": {
+                      "type": "string"
+                    },
+                    "Pulse": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Title"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Progress"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Min": {
+                      "type": "number"
+                    },
+                    "Max": {
+                      "type": "number"
+                    },
+                    "Default": {
+                      "type": "number"
+                    },
+                    "Suffix": {
+                      "type": "string"
+                    },
+                    "ShowValue": {
+                      "type": "boolean"
+                    },
+                    "Indeterminate": {
+                      "type": "boolean"
+                    },
+                    "Format": {}
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Code"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Code": {
+                      "type": "string"
+                    },
+                    "Content": {
+                      "type": "string"
+                    },
+                    "Language": {
+                      "type": "string"
+                    },
+                    "Height": {
+                      "type": "number"
+                    },
+                    "Copy": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Image"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Image"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Image": {
+                      "type": "string"
+                    },
+                    "Height": {
+                      "type": "number"
+                    },
+                    "Caption": {
+                      "type": "string"
+                    },
+                    "ScaleType": {},
+                    "Tint": {},
+                    "ImageColor3": {},
+                    "Transparency": {
+                      "type": "number"
+                    },
+                    "ImageTransparency": {
+                      "type": "number"
+                    },
+                    "BackgroundTransparency": {
+                      "type": "number"
+                    },
+                    "RectOffset": {},
+                    "RectSize": {},
+                    "ImageRectOffset": {},
+                    "ImageRectSize": {}
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Instance"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Passthrough"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Instance": {},
+                    "Height": {
+                      "type": "number"
+                    },
+                    "Fill": {
+                      "type": "boolean"
+                    },
+                    "Clone": {
+                      "type": "boolean"
+                    },
+                    "DestroyInstance": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Object"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Viewport"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Object": {},
+                    "Clone": {
+                      "type": "boolean"
+                    },
+                    "DestroyObject": {
+                      "type": "boolean"
+                    },
+                    "Camera": {},
+                    "Interactive": {
+                      "type": "boolean"
+                    },
+                    "AutoFocus": {
+                      "type": "boolean"
+                    },
+                    "Height": {
+                      "type": "number"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "Type",
+                    "Video"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "Type": {
+                      "const": "Video"
+                    },
+                    "Id": {
+                      "type": "string"
+                    },
+                    "Title": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "Keywords": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Badge": {
+                      "type": "string"
+                    },
+                    "Disabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "Visible": {
+                      "type": "boolean"
+                    },
+                    "VisibleWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "EnabledWhen": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "IgnoreConfig": {
+                      "type": "boolean"
+                    },
+                    "Order": {
+                      "type": "number"
+                    },
+                    "Callback": {},
+                    "Tooltip": {
+                      "type": "string"
+                    },
+                    "ContextMenu": {
+                      "type": [
+                        "array",
+                        "object"
+                      ]
+                    },
+                    "Adaptive": {
+                      "type": "boolean"
+                    },
+                    "Icon": {
+                      "type": "string"
+                    },
+                    "IconColor": {
+                      "type": "string"
+                    },
+                    "Video": {
+                      "type": "string"
+                    },
+                    "Looped": {
+                      "type": "boolean"
+                    },
+                    "Playing": {
+                      "type": "boolean"
+                    },
+                    "Volume": {
+                      "type": "number"
+                    },
+                    "Height": {
+                      "type": "number"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "Sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Id": {
+                  "type": "string"
+                },
+                "Title": {
+                  "type": "string"
+                },
+                "Description": {
+                  "type": "string"
+                },
+                "Icon": {
+                  "type": "string"
+                },
+                "Collapsible": {
+                  "type": "boolean"
+                },
+                "Collapsed": {
+                  "type": "boolean"
+                },
+                "Column": {
+                  "type": "number"
+                },
+                "Span": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "Layout": {
+                  "enum": [
+                    "Stack",
+                    "Grid",
+                    "Auto"
+                  ]
+                },
+                "Visible": {
+                  "type": "boolean"
+                },
+                "VisibleWhen": {},
+                "EnabledWhen": {},
+                "Disabled": {
+                  "type": "boolean"
+                },
+                "Controls": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Button"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Text": {
+                            "type": "string"
+                          },
+                          "Variant": {
+                            "type": "string"
+                          },
+                          "Confirm": {
+                            "type": "string"
+                          },
+                          "Risky": {
+                            "type": "boolean"
+                          },
+                          "DoubleClick": {
+                            "type": "boolean"
+                          },
+                          "DoubleClickWindow": {
+                            "type": "number"
+                          },
+                          "SubButtons": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Actions": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Toggle"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Default": {
+                            "type": "boolean"
+                          },
+                          "Style": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title",
+                          "Min",
+                          "Max"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Slider"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Min": {
+                            "type": "number"
+                          },
+                          "Max": {
+                            "type": "number"
+                          },
+                          "Default": {
+                            "type": "number"
+                          },
+                          "Step": {
+                            "type": "number"
+                          },
+                          "Precision": {
+                            "type": "number"
+                          },
+                          "Rounding": {
+                            "type": "number"
+                          },
+                          "Prefix": {
+                            "type": "string"
+                          },
+                          "Suffix": {
+                            "type": "string"
+                          },
+                          "Format": {},
+                          "FormatDisplayValue": {},
+                          "ValueInput": {
+                            "type": "boolean"
+                          },
+                          "AllowRightClickInput": {
+                            "type": "boolean"
+                          },
+                          "FloatingValue": {
+                            "type": "boolean"
+                          },
+                          "Compact": {
+                            "type": "boolean"
+                          },
+                          "HideMax": {
+                            "type": "boolean"
+                          },
+                          "IconFrom": {
+                            "type": "string"
+                          },
+                          "IconTo": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Dropdown"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Options": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Values": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Default": {},
+                          "Multi": {
+                            "type": "boolean"
+                          },
+                          "MultiValueMode": {
+                            "type": "string"
+                          },
+                          "Map": {
+                            "type": "boolean"
+                          },
+                          "ReturnMap": {
+                            "type": "boolean"
+                          },
+                          "Searchable": {
+                            "type": "boolean"
+                          },
+                          "AllowNone": {
+                            "type": "boolean"
+                          },
+                          "AllowNull": {
+                            "type": "boolean"
+                          },
+                          "Max": {
+                            "type": "number"
+                          },
+                          "Placeholder": {
+                            "type": "string"
+                          },
+                          "Style": {
+                            "type": "string"
+                          },
+                          "Source": {},
+                          "MaxVisibleRows": {
+                            "type": "number"
+                          },
+                          "MaxVisibleDropdownItems": {
+                            "type": "number"
+                          },
+                          "DragSelect": {
+                            "type": "boolean"
+                          },
+                          "DisabledValues": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "ValueImages": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Images": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "FormatDisplayValue": {},
+                          "FormatListValue": {},
+                          "FormatValue": {},
+                          "FormatOption": {}
+                        },
+                        "anyOf": [
+                          {
+                            "required": [
+                              "Options"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "Values"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "Source"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Input"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Default": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "Placeholder": {
+                            "type": "string"
+                          },
+                          "Numeric": {
+                            "type": "boolean"
+                          },
+                          "MaxLength": {
+                            "type": "number"
+                          },
+                          "Multiline": {
+                            "type": "boolean"
+                          },
+                          "ClearOnFocus": {
+                            "type": "boolean"
+                          },
+                          "ClearTextOnFocus": {
+                            "type": "boolean"
+                          },
+                          "ClearTextOnBlur": {
+                            "type": "boolean"
+                          },
+                          "AllowEmpty": {
+                            "type": "boolean"
+                          },
+                          "EmptyReset": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "Validate": {},
+                          "VerifyValue": {},
+                          "Finished": {
+                            "type": "boolean"
+                          },
+                          "CommitOn": {
+                            "type": "string"
+                          },
+                          "Height": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Keybind"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Default": {},
+                          "Mode": {
+                            "type": "string"
+                          },
+                          "AllowedModes": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Blacklist": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Blacklisted": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Whitelist": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Whitelisted": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Modifiers": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "DefaultModifiers": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "ModifierWhitelist": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "WhitelistedModifiers": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "ModifierBlacklist": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "BlacklistModifiers": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "BlacklistedModifiers": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "ExactModifiers": {
+                            "type": "boolean"
+                          },
+                          "CustomModes": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Modes": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "AttachTo": {},
+                          "SyncToggle": {
+                            "type": "boolean"
+                          },
+                          "SyncToggleState": {
+                            "type": "boolean"
+                          },
+                          "WaitForCallback": {
+                            "type": "boolean"
+                          },
+                          "ChangedCallback": {},
+                          "Clicked": {},
+                          "NoUI": {
+                            "type": "boolean"
+                          },
+                          "Mobile": {
+                            "type": "boolean"
+                          },
+                          "MobileText": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "ColorPicker"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Default": {},
+                          "Alpha": {
+                            "type": "boolean"
+                          },
+                          "DefaultAlpha": {
+                            "type": "number"
+                          },
+                          "Presets": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Paragraph"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Variant": {
+                            "type": "string"
+                          },
+                          "RichText": {
+                            "type": "boolean"
+                          },
+                          "DoesWrap": {
+                            "type": "boolean"
+                          },
+                          "Wrap": {
+                            "type": "boolean"
+                          },
+                          "Size": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Divider"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Text": {
+                            "type": "string"
+                          },
+                          "Margin": {
+                            "type": "number"
+                          },
+                          "MarginTop": {
+                            "type": "number"
+                          },
+                          "MarginBottom": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Status"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Value": {},
+                          "Status": {
+                            "type": "string"
+                          },
+                          "Pulse": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Title"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Progress"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Min": {
+                            "type": "number"
+                          },
+                          "Max": {
+                            "type": "number"
+                          },
+                          "Default": {
+                            "type": "number"
+                          },
+                          "Suffix": {
+                            "type": "string"
+                          },
+                          "ShowValue": {
+                            "type": "boolean"
+                          },
+                          "Indeterminate": {
+                            "type": "boolean"
+                          },
+                          "Format": {}
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Code"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Code": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Language": {
+                            "type": "string"
+                          },
+                          "Height": {
+                            "type": "number"
+                          },
+                          "Copy": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Image"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Image"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Image": {
+                            "type": "string"
+                          },
+                          "Height": {
+                            "type": "number"
+                          },
+                          "Caption": {
+                            "type": "string"
+                          },
+                          "ScaleType": {},
+                          "Tint": {},
+                          "ImageColor3": {},
+                          "Transparency": {
+                            "type": "number"
+                          },
+                          "ImageTransparency": {
+                            "type": "number"
+                          },
+                          "BackgroundTransparency": {
+                            "type": "number"
+                          },
+                          "RectOffset": {},
+                          "RectSize": {},
+                          "ImageRectOffset": {},
+                          "ImageRectSize": {}
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Instance"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Passthrough"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Instance": {},
+                          "Height": {
+                            "type": "number"
+                          },
+                          "Fill": {
+                            "type": "boolean"
+                          },
+                          "Clone": {
+                            "type": "boolean"
+                          },
+                          "DestroyInstance": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Object"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Viewport"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Object": {},
+                          "Clone": {
+                            "type": "boolean"
+                          },
+                          "DestroyObject": {
+                            "type": "boolean"
+                          },
+                          "Camera": {},
+                          "Interactive": {
+                            "type": "boolean"
+                          },
+                          "AutoFocus": {
+                            "type": "boolean"
+                          },
+                          "Height": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "Type",
+                          "Video"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "Type": {
+                            "const": "Video"
+                          },
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Keywords": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Badge": {
+                            "type": "string"
+                          },
+                          "Disabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "Visible": {
+                            "type": "boolean"
+                          },
+                          "VisibleWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "EnabledWhen": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "IgnoreConfig": {
+                            "type": "boolean"
+                          },
+                          "Order": {
+                            "type": "number"
+                          },
+                          "Callback": {},
+                          "Tooltip": {
+                            "type": "string"
+                          },
+                          "ContextMenu": {
+                            "type": [
+                              "array",
+                              "object"
+                            ]
+                          },
+                          "Adaptive": {
+                            "type": "boolean"
+                          },
+                          "Icon": {
+                            "type": "string"
+                          },
+                          "IconColor": {
+                            "type": "string"
+                          },
+                          "Video": {
+                            "type": "string"
+                          },
+                          "Looped": {
+                            "type": "boolean"
+                          },
+                          "Playing": {
+                            "type": "boolean"
+                          },
+                          "Volume": {
+                            "type": "number"
+                          },
+                          "Height": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
