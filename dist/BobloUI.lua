@@ -20408,7 +20408,7 @@ function Section:_mount()
 		PaddingRight = UDim.new(0, pad),
 		Parent = self._root,
 	})
-	self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") else 8)
+	self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") else 12)
 	self._rootLayout.Parent = self._root
 	if not self._implicit and self.Title then
 		local headerClass = if self.Collapsible then "TextButton" else "Frame"
@@ -20679,7 +20679,7 @@ function Section:_applyTokens()
 		self._padding.PaddingRight = u
 	end
 	if self._rootLayout then
-		self._rootLayout.Padding = UDim.new(0, if self._implicit then t:Get("RowGap") else 8)
+		self._rootLayout.Padding = UDim.new(0, if self._implicit then t:Get("RowGap") else 12)
 	end
 	if self._contentLayout then
 		self._contentLayout.Padding = UDim.new(0, t:Get("RowGap"))
@@ -21122,7 +21122,9 @@ function Tab.new(window, options)
 		PaddingRight = UDim.new(0, 0),
 		Parent = self._page,
 	})
-	self._introHeight = if self.Description then 54 else 36
+	-- Keep a 12 px visual gap below the 34 px icon when a tab has no description.
+	-- Tabs with a description already end at y=42 inside a 54 px intro.
+	self._introHeight = if self.Description then 54 else 46
 	local pagePadding = tokens:Get("PagePadding")
 	self._pageIntro = New("Frame", {
 		Name = "PageIntro",
@@ -21569,7 +21571,7 @@ function Tab:SetDescription(description: string?)
 		self._pageDescription:Destroy()
 		self._pageDescription = nil
 	end
-	self._introHeight = if description then 54 else 36
+	self._introHeight = if description then 54 else 46
 	local pagePadding = self._window.Tokens:Get("PagePadding")
 	if self._pageIntro then
 		self._pageIntro.Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight)
