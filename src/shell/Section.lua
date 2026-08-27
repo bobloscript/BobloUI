@@ -133,7 +133,7 @@ function Section:_mount()
 		PaddingRight = UDim.new(0, pad),
 		Parent = self._root,
 	})
-	self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") else 8)
+	self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") else 12)
 	self._rootLayout.Parent = self._root
 	if not self._implicit and self.Title then
 		local headerClass = if self.Collapsible then "TextButton" else "Frame"
@@ -404,7 +404,7 @@ function Section:_applyTokens()
 		self._padding.PaddingRight = u
 	end
 	if self._rootLayout then
-		self._rootLayout.Padding = UDim.new(0, if self._implicit then t:Get("RowGap") else 8)
+		self._rootLayout.Padding = UDim.new(0, if self._implicit then t:Get("RowGap") else 12)
 	end
 	if self._contentLayout then
 		self._contentLayout.Padding = UDim.new(0, t:Get("RowGap"))
