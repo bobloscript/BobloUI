@@ -126,11 +126,12 @@ Tokens.Profiles = {
 	},
 }
 
-function Tokens.new(density: string?, deviceClass: string?)
+function Tokens.new(density: string?, deviceClass: string?, minimal: boolean?)
 	local self = setmetatable({
 		Changed = Signal.new("Tokens.Changed"),
 		_density = density or "Comfortable",
 		_deviceClass = deviceClass or "Desktop",
+		_minimal = minimal == true,
 		_values = {},
 	}, Tokens)
 	self:_recompute()
@@ -149,6 +150,14 @@ function Tokens:_recompute()
 		values.ControlHeight = math.max(values.ControlHeight, Tokens.MinTapTarget)
 		values.NavItemHeight = math.max(values.NavItemHeight, Tokens.MinTapTarget)
 		values.FieldHeight = math.max(values.FieldHeight, 34)
+	end
+	if self._minimal then
+		values.ControlHeight = math.max(44, values.ControlHeight)
+		values.PagePadding = 8
+		values.SectionGap = 8
+		values.RowGap = 4
+		values.SectionPadding = 0
+		values.HeaderHeight = 46
 	end
 	self._values = values
 end

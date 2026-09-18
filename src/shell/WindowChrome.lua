@@ -410,6 +410,11 @@ function WindowChrome:_refreshTopbarLayout()
 	if not self._topbarExtras or not self._titleLabel then
 		return
 	end
+	if self._minimal then
+		self._topbarExtras.Visible = false
+		self._titleLabel.Size = UDim2.new(1, -148, 1, 0)
+		return
+	end
 	local count = 0
 	for _, item in self._topbarItems do
 		if item.Instance and item.Instance.Parent then
@@ -886,7 +891,7 @@ end
 function WindowChrome:SetSubtitle(text: string?)
 	self.Subtitle = text
 	self._subtitleLabel.Text = text or ""
-	self._subtitleLabel.Visible = text ~= nil and self._layout ~= "Drawer"
+	self._subtitleLabel.Visible = text ~= nil and self._layout ~= "Drawer" and not self._minimal
 	self:_applyTokens()
 	return self
 end

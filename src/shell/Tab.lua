@@ -164,7 +164,7 @@ function Tab.new(window, options)
 	})
 	-- Keep a 12 px visual gap below the 34 px icon when a tab has no description.
 	-- Tabs with a description already end at y=42 inside a 54 px intro.
-	self._introHeight = if self.Description then 54 else 46
+	self._introHeight = if window._minimal then 0 elseif self.Description then 54 else 46
 	local pagePadding = tokens:Get("PagePadding")
 	self._pageIntro = New("Frame", {
 		Name = "PageIntro",
@@ -173,6 +173,7 @@ function Tab.new(window, options)
 		BackgroundTransparency = 1,
 		Parent = self._page,
 	})
+	self._pageIntro.Visible = not window._minimal
 	self._pageIconBack = New("Frame", {
 		Name = "PageIconTile",
 		Size = UDim2.fromOffset(34, 34),
@@ -292,6 +293,9 @@ end
 function Tab:_applyTokens()
 	local t = self._window.Tokens
 	local pagePadding = t:Get("PagePadding")
+	if self._window._minimal then
+		self._introHeight = 0
+	end
 	if self._pagePadding then
 		self._pagePadding.PaddingTop = UDim.new(0, pagePadding)
 		self._pagePadding.PaddingBottom = UDim.new(0, pagePadding)
@@ -307,7 +311,10 @@ function Tab:_applyTokens()
 		self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 	end
 	if self._emptyState then
-		self._emptyState.Position = UDim2.fromOffset(pagePadding, self._introHeight + 24)
+		self._emptyState.Position = UDim2.fromOffset(
+			pagePadding,
+			self._introHeight + (if self._window._minimal then 0 else 24)
+		)
 		self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 		self._emptyState.TextSize = t:Get("FontBody")
 	end
@@ -370,7 +377,8 @@ function Tab:_applySectionLayout(layout)
 	local layoutWidth = math.max(1, available - edgeInset * 2)
 	local gap = t:Get("ColumnGap")
 	local minWidth = t:Get("MinSectionWidth")
-	local twoColumn = (layout ~= "Drawer") and layoutWidth >= math.max(t:Get("TwoColumnMinWidth"), minWidth * 2 + gap)
+	local twoColumn = (layout ~= "Drawer" and not self._window._minimal)
+		and layoutWidth >= math.max(t:Get("TwoColumnMinWidth"), minWidth * 2 + gap)
 	self._twoColumn = twoColumn
 	if self._column1 then
 		self._column1.Visible = false
@@ -385,6 +393,11 @@ function Tab:_applySectionLayout(layout)
 			table.insert(visible, section)
 		end
 	end
+	if self._window._minimal then
+		for _, section in visible do
+			section:_applyMinimalHeader(#visible > 1)
+		end
+	end
 	local function heightOf(section)
 		local physical = (section._root and section._root.AbsoluteSize.Y or scale)
 		return math.max(1, math.floor((physical / scale) + 0.5))
@@ -397,6 +410,9 @@ function Tab:_applySectionLayout(layout)
 			y += heightOf(sec) + gap
 		end
 		self._sectionHost.Size = UDim2.new(1, -(t:Get("PagePadding") * 2), 0, math.max(0, y - gap + edgeInset))
+		if self._window._minimal and self._selected then
+			self._window:_syncMinimalHeight()
+		end
 		return
 	end
 	local leftWidth = math.max(1, math.floor((layoutWidth - gap) / 2))
@@ -429,6 +445,9 @@ function Tab:_applySectionLayout(layout)
 		end
 	end
 	self._sectionHost.Size = UDim2.new(1, -(t:Get("PagePadding") * 2), 0, math.max(0, y - gap + edgeInset))
+	if self._window._minimal and self._selected then
+		self._window:_syncMinimalHeight()
+	end
 end
 
 function Tab:AddSection(options)
@@ -611,7 +630,7 @@ function Tab:SetDescription(description: string?)
 		self._pageDescription:Destroy()
 		self._pageDescription = nil
 	end
-	self._introHeight = if description then 54 else 46
+	self._introHeight = if self._window._minimal then 0 elseif description then 54 else 46
 	local pagePadding = self._window.Tokens:Get("PagePadding")
 	if self._pageIntro then
 		self._pageIntro.Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight)
@@ -622,7 +641,10 @@ function Tab:SetDescription(description: string?)
 		self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 	end
 	if self._emptyState then
-		self._emptyState.Position = UDim2.fromOffset(pagePadding, self._introHeight + 24)
+		self._emptyState.Position = UDim2.fromOffset(
+			pagePadding,
+			self._introHeight + (if self._window._minimal then 0 else 24)
+		)
 		self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 	end
 	self:_scheduleSectionLayout()
@@ -692,7 +714,13 @@ end
 function Tab:SetVisible(visible: boolean)
 	self._button.Visible = visible
 	if not visible and self._selected then
+		if self._window._minimal then
+			self:_setSelected(false)
+		end
 		self._window:_selectFirstVisible()
+	end
+	if self._window._minimal then
+		self._window:_refreshMinimalMenu()
 	end
 	return self
 end
@@ -705,7 +733,13 @@ function Tab:SetLocked(locked, reason)
 		self._label.TextTransparency = if self.Locked then 0.38 else 0
 	end
 	if self.Locked and self._selected then
+		if self._window._minimal then
+			self:_setSelected(false)
+		end
 		self._window:_selectFirstVisible()
+	end
+	if self._window._minimal then
+		self._window:_refreshMinimalMenu()
 	end
 	return self
 end
@@ -735,6 +769,9 @@ function Tab:Destroy()
 	self._janitor:Destroy()
 	if wasSelected and not window._destroying then
 		window:_selectFirstVisible()
+	end
+	if window._minimal and not window._destroying then
+		window:_refreshMinimalMenu()
 	end
 end
 return Tab

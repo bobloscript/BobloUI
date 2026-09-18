@@ -7,6 +7,7 @@ local Util = require("@runtime/Util")
 local Tab = require("@shell/Tab")
 local WindowChrome = require("@shell/WindowChrome")
 local WindowLayout = require("@shell/WindowLayout")
+local Minimal = require("@shell/Minimal")
 
 local New = Create.New
 
@@ -17,6 +18,9 @@ for name, method in pairs(WindowChrome) do
 	Window[name] = method
 end
 for name, method in pairs(WindowLayout) do
+	Window[name] = method
+end
+for name, method in pairs(Minimal) do
 	Window[name] = method
 end
 
@@ -44,10 +48,13 @@ function Window.new(context, options)
 		_tabs = {},
 		_active = nil,
 		_layout = nil,
+		_minimal = options.Presentation == "Minimal",
 		_drawer = nil,
 		_visible = true,
-		_size = options.Size or UDim2.fromOffset(720, 480),
-		_minSize = options.MinSize or Vector2.new(500, 340),
+		_size = options.Size
+			or (if options.Presentation == "Minimal" then UDim2.fromOffset(340, 0) else UDim2.fromOffset(720, 480)),
+		_minSize = options.MinSize
+			or (if options.Presentation == "Minimal" then Vector2.new(280, 88) else Vector2.new(500, 340)),
 		_themeHandles = {},
 		_groups = {},
 		_groupSeq = 0,
@@ -55,7 +62,10 @@ function Window.new(context, options)
 		_scale = options.Scale or 1,
 		_rememberGeometry = options.RememberGeometry ~= false,
 		_sidebarHidden = options.SidebarHidden == true,
-		_minContainerWidth = math.max(320, tonumber(options.MinContainerWidth) or 500),
+		_minContainerWidth = math.max(
+			if options.Presentation == "Minimal" then 280 else 320,
+			tonumber(options.MinContainerWidth) or (if options.Presentation == "Minimal" then 280 else 500)
+		),
 		_minSidebarWidth = math.max(96, tonumber(options.MinSidebarWidth) or 120),
 		_sidebarCompactWidth = math.max(48, tonumber(options.SidebarCompactWidth) or context.Tokens:Get("RailWidth")),
 		_sidebarCollapseThreshold = math.max(320, tonumber(options.SidebarCollapseThreshold) or 700),
@@ -164,6 +174,9 @@ function Window.new(context, options)
 end
 
 function Window:_responsiveLayout()
+	if self._minimal then
+		return "Minimal"
+	end
 	local width = self.Device.Viewport.X
 	if width < self._sidebarCollapseThreshold then
 		return "Drawer"
@@ -241,6 +254,9 @@ function Window:_build()
 	self:_buildBody()
 	self:_buildFooter()
 	self:_buildResizeGrip()
+	if self._minimal then
+		self:_buildMinimal()
+	end
 	self:SetWindowOpacity(self._windowOpacity)
 	if self._backgroundImageSource then
 		self:SetBackgroundImage(self._backgroundImageSource, self._backgroundImageTransparency)
@@ -377,6 +393,9 @@ function Window:AddTab(options)
 	end
 
 	self:_applyLayout(self._layout, true)
+	if self._minimal then
+		self:_refreshMinimalMenu()
+	end
 	if not options._system and self._settingsService and not self._settingsService._mounted then
 		self._settingsService:_ensureMounted()
 	end
@@ -439,6 +458,10 @@ function Window:_selectTab(tab)
 		)
 	end
 	self:_refreshHeaderTitle()
+	if self._minimal then
+		self:_refreshMinimalMenu()
+		self:_scheduleSectionLayouts()
+	end
 	self:CloseDrawer()
 end
 
@@ -449,6 +472,9 @@ function Window:_selectFirstVisible()
 			self:_selectTab(tab)
 			return
 		end
+	end
+	if self._minimal then
+		self:_syncMinimalHeight()
 	end
 end
 

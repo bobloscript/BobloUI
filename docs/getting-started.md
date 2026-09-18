@@ -47,6 +47,9 @@ versions, because config files are keyed against it.
 saved between sessions. With it, `AutoLoad = true` restores the last profile the
 player marked for autoload, before your callbacks fire.
 
+For a script with only a few controls, set `Presentation = "Minimal"`. It uses
+the same control methods in a small window; see [Minimal window](minimal.md).
+
 ## 3. Add a tab and some controls
 
 Controls live in sections, and sections live in tabs.

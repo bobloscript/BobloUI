@@ -108,6 +108,7 @@ local WINDOW_OPTIONS = {
 	"Density",
 	"Scale",
 	"Size",
+	"Presentation",
 	"MinSize",
 	"Locale",
 	"ToggleKey",
@@ -169,6 +170,9 @@ local function checkOptions(options)
 	if type(options.Title) ~= "string" then
 		error("[BobloUI] CreateWindow: Title is required and must be a string.", 3)
 	end
+	if options.Presentation ~= nil and options.Presentation ~= "Standard" and options.Presentation ~= "Minimal" then
+		error("[BobloUI] Presentation must be 'Standard' or 'Minimal'.", 3)
+	end
 	for key in options do
 		if not table.find(WINDOW_OPTIONS, key) then
 			local suggestion = Util.suggest(tostring(key), WINDOW_OPTIONS)
@@ -206,7 +210,14 @@ function BobloUI:CreateWindow(options)
 	local janitor = Janitor.new(`Window[{id}]`)
 	local device = Device.new()
 	janitor:Add(device)
-	local tokens = Tokens.new(options.Density or (options.Compact and "Compact") or "Comfortable", device.Class)
+	local tokens = Tokens.new(
+		options.Density
+			or (options.Compact and "Compact")
+			or (options.Presentation == "Minimal" and "Compact")
+			or "Comfortable",
+		device.Class,
+		options.Presentation == "Minimal"
+	)
 	janitor:Add(tokens)
 	local theme = Theme.new({
 		Palettes = { Dark = Dark, Light = Light },

@@ -1,7 +1,7 @@
 --[[
 	BobloUI v0.11.5-beta.1 - generated bundle, do not edit.
 	Source: https://github.com/bobloscript/BobloUI/blob/main/dist/BobloUI.lua
-	Modules: 71
+	Modules: 72
 
 THIRD-PARTY LICENSE NOTICES
 
@@ -344,6 +344,9 @@ BorderSizePixel = 0,
 LayoutOrder = self._order or 0,
 Parent = self._section:_controlParent(self),
 })
+if w._minimal then
+self._root.BackgroundTransparency = 0.78
+end
 self._janitor:Add(self._root)
 Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._root })
 w:_bind(self._root, { BackgroundColor3 = "ControlHover" })
@@ -468,7 +471,10 @@ return
 end
 self._root.BackgroundColor3 = self._window.Theme:Get("ControlHover")
 local active = hover and not self._disabled
-self._window.Motion:Tween(self._root, "Fast", { BackgroundTransparency = if active then 0.74 else 1 })
+self._window.Motion:Tween(self._root, "Fast", {
+BackgroundTransparency = if active then (if self._window._minimal then 0.54 else 0.74)
+else (if self._window._minimal then 0.78 else 1),
+})
 if self._hoverRail then
 self._window.Motion:Tween(self._hoverRail, "Fast", { BackgroundTransparency = if active then 0.16 else 1 })
 end
@@ -4192,7 +4198,7 @@ return __require("controls/Keybind").new(self._section, options)
 end
 function Toggle.new(section, options)
 local self = setmetatable({}, Toggle)
-self.Style = options.Style or "Switch"
+self.Style = options.Style or (if section._window._minimal then "Checkbox" else "Switch")
 Base.init(self, section, "Toggle", options, { Stateful = true, Default = options.Default == true })
 return Base.finish(self)
 end
@@ -4241,6 +4247,24 @@ if not self:IsDisabled() then
 self:Flip()
 end
 end))
+if w._minimal then
+self._root.Active = true
+self._janitor:Add(self._root.InputBegan:Connect(function(input)
+if self:IsDisabled() or (
+input.UserInputType ~= Enum.UserInputType.MouseButton1
+and input.UserInputType ~= Enum.UserInputType.Touch
+) then
+return
+end
+local point = input.Position
+local buttonPos, buttonSize = self._button.AbsolutePosition, self._button.AbsoluteSize
+if point.X >= buttonPos.X and point.X <= buttonPos.X + buttonSize.X
+and point.Y >= buttonPos.Y and point.Y <= buttonPos.Y + buttonSize.Y then
+return
+end
+self:Flip()
+end))
+end
 end
 function Toggle:_render(value)
 if not self._button then
@@ -4706,6 +4730,7 @@ local WINDOW_OPTIONS = {
 "Density",
 "Scale",
 "Size",
+"Presentation",
 "MinSize",
 "Locale",
 "ToggleKey",
@@ -4767,6 +4792,9 @@ end
 if type(options.Title) ~= "string" then
 error("[BobloUI] CreateWindow: Title is required and must be a string.", 3)
 end
+if options.Presentation ~= nil and options.Presentation ~= "Standard" and options.Presentation ~= "Minimal" then
+error("[BobloUI] Presentation must be 'Standard' or 'Minimal'.", 3)
+end
 for key in options do
 if not table.find(WINDOW_OPTIONS, key) then
 local suggestion = Util.suggest(tostring(key), WINDOW_OPTIONS)
@@ -4802,7 +4830,14 @@ end
 local janitor = Janitor.new(`Window[{id}]`)
 local device = Device.new()
 janitor:Add(device)
-local tokens = Tokens.new(options.Density or (options.Compact and "Compact") or "Comfortable", device.Class)
+local tokens = Tokens.new(
+options.Density
+or (options.Compact and "Compact")
+or (options.Presentation == "Minimal" and "Compact")
+or "Comfortable",
+device.Class,
+options.Presentation == "Minimal"
+)
 janitor:Add(tokens)
 local theme = Theme.new({
 Palettes = { Dark = Dark, Light = Light },
@@ -7283,11 +7318,12 @@ SliderTrack = 5,
 SliderKnob = 16,
 },
 }
-function Tokens.new(density: string?, deviceClass: string?)
+function Tokens.new(density: string?, deviceClass: string?, minimal: boolean?)
 local self = setmetatable({
 Changed = Signal.new("Tokens.Changed"),
 _density = density or "Comfortable",
 _deviceClass = deviceClass or "Desktop",
+_minimal = minimal == true,
 _values = {},
 }, Tokens)
 self:_recompute()
@@ -7306,6 +7342,14 @@ if self._deviceClass == "Phone" then
 values.ControlHeight = math.max(values.ControlHeight, Tokens.MinTapTarget)
 values.NavItemHeight = math.max(values.NavItemHeight, Tokens.MinTapTarget)
 values.FieldHeight = math.max(values.FieldHeight, 34)
+end
+if self._minimal then
+values.ControlHeight = math.max(44, values.ControlHeight)
+values.PagePadding = 8
+values.SectionGap = 8
+values.RowGap = 4
+values.SectionPadding = 0
+values.HeaderHeight = 46
 end
 self._values = values
 end
@@ -19000,6 +19044,185 @@ end
 return ThemeManager
 end
 
+__modules["shell/Minimal"] = function()
+local Create = __require("runtime/Create")
+local Icon = __require("primitives/Icon")
+local Popover = __require("primitives/Popover")
+local Minimal = {}
+function Minimal:_buildMinimal()
+self._minimalMenuButton = Create.New("TextButton", {
+Name = "MinimalTabs",
+Size = UDim2.fromOffset(36, 40),
+Position = UDim2.new(1, -50, 0.5, 0),
+AnchorPoint = Vector2.new(1, 0.5),
+BackgroundTransparency = 1,
+BorderSizePixel = 0,
+Text = "",
+AutoButtonColor = false,
+Visible = false,
+Parent = self._header,
+})
+self._minimalChevron = Icon.new(self, "chevron_down", {
+Size = UDim2.fromOffset(17, 17),
+Position = UDim2.fromScale(0.5, 0.5),
+AnchorPoint = Vector2.new(0.5, 0.5),
+Parent = self._minimalMenuButton,
+})
+Icon.setColor(self._minimalChevron, self.Theme:Get("TextSecondary"))
+self._janitor:Add(self.Theme.Changed:Connect(function()
+Icon.setColor(self._minimalChevron, self.Theme:Get("TextSecondary"))
+end))
+self._janitor:Add(self._minimalMenuButton.MouseButton1Click:Connect(function()
+self:_openMinimalMenu()
+end))
+self._janitor:Add(function()
+if self._minimalMenuHandle then
+self._minimalMenuHandle:Dismiss()
+end
+end)
+end
+function Minimal:_refreshMinimalMenu()
+if not self._minimalMenuButton then
+return
+end
+local count = 0
+for _, tab in self._tabs do
+if tab._button.Visible then
+count += 1
+end
+end
+self._minimalMenuButton.Visible = count > 1
+if self._minimalMenuHandle then
+self._minimalMenuHandle:Dismiss()
+self._minimalMenuHandle = nil
+end
+end
+function Minimal:_openMinimalMenu()
+if self._minimalMenuHandle then
+self._minimalMenuHandle:Dismiss()
+self._minimalMenuHandle = nil
+return
+end
+local tabs = {}
+for _, tab in self._tabs do
+if tab._button.Visible then
+table.insert(tabs, tab)
+end
+end
+if #tabs < 2 then
+return
+end
+local height = math.min(#tabs * 44 + 8, 264)
+local handle = Popover.open(self, self._minimalMenuButton, Vector2.new(220, height), {
+OnDismiss = function()
+self._minimalMenuHandle = nil
+end,
+})
+self._minimalMenuHandle = handle
+local list = Create.New("ScrollingFrame", {
+Name = "MinimalTabList",
+Size = UDim2.fromScale(1, 1),
+BackgroundTransparency = 1,
+BorderSizePixel = 0,
+ScrollBarThickness = 3,
+ScrollingDirection = Enum.ScrollingDirection.Y,
+CanvasSize = UDim2.new(),
+AutomaticCanvasSize = Enum.AutomaticSize.Y,
+Parent = handle.Frame,
+})
+Create.New("UIPadding", {
+PaddingTop = UDim.new(0, 4),
+PaddingBottom = UDim.new(0, 4),
+PaddingLeft = UDim.new(0, 4),
+PaddingRight = UDim.new(0, 4),
+Parent = list,
+})
+Create.List(0).Parent = list
+for index, tab in tabs do
+local label = self.Locale:Resolve(tab.Title)
+if tab.Locked then
+label = label .. "  · locked"
+end
+local item = Create.New("TextButton", {
+Name = `Tab_{tab.Id}`,
+Size = UDim2.new(1, 0, 0, 44),
+LayoutOrder = index,
+BackgroundTransparency = if tab == self._active then 0.7 else 1,
+BorderSizePixel = 0,
+AutoButtonColor = false,
+Text = "  " .. label,
+TextXAlignment = Enum.TextXAlignment.Left,
+TextSize = self.Tokens:Get("FontBody"),
+Font = self.Fonts.Medium,
+Parent = list,
+})
+Create.New("UICorner", { CornerRadius = UDim.new(0, 7), Parent = item })
+self:_bind(item, {
+BackgroundColor3 = "AccentSoft",
+TextColor3 = if tab.Locked then "TextTertiary" else "Text",
+})
+item.MouseButton1Click:Connect(function()
+handle:Dismiss()
+tab:Select()
+end)
+end
+end
+function Minimal:_applyMinimalLayout()
+self._navToggle.Visible = false
+self._navPanel.Visible = false
+self._sidebarButton.Visible = false
+self._searchButton.Visible = false
+self._themeButton.Visible = false
+self._minimizeButton.Visible = false
+self._subtitleLabel.Visible = false
+self._topbarExtras.Visible = false
+self._footer.Visible = false
+self._grip.Visible = false
+self._content.Size = UDim2.fromScale(1, 1)
+self._content.Position = UDim2.new()
+self:_applyMinimalTokens()
+self:_applyGeometry()
+self:_refreshMinimalMenu()
+end
+function Minimal:_applyMinimalTokens()
+local headerHeight = self.Tokens:Get("HeaderHeight")
+self._header.Size = UDim2.new(1, 0, 0, headerHeight)
+self._body.Size = UDim2.new(1, 0, 1, -headerHeight)
+self._body.Position = UDim2.fromOffset(0, headerHeight)
+self._rootStroke.Thickness = self.Tokens:Get("Stroke")
+self._titleLabel.TextSize = self.Tokens:Get("FontTitle")
+self._titleLabel.Position = UDim2.fromOffset(52, 0)
+self._titleLabel.Size = UDim2.new(1, -148, 1, 0)
+self:_applyCornerRadius()
+for _, tab in self._tabs do
+tab:_applyTokens()
+end
+self:_scheduleSectionLayouts()
+end
+function Minimal:_syncMinimalHeight()
+if not self._minimal or self._destroying then
+return
+end
+local _, safeSize = self.Device:SafeArea()
+local scale = math.max(0.01, self._scale or 1)
+local maxHeight = math.max(88, safeSize.Y / scale - 16)
+if self._size.Y.Offset > 0 then
+maxHeight = math.min(maxHeight, math.max(88, self._size.Y.Offset))
+else
+maxHeight = math.min(maxHeight, math.max(220, safeSize.Y / scale * 0.72))
+end
+local contentHeight = 54
+if self._active and self._active._sectionHost then
+contentHeight = math.max(contentHeight, self._active._sectionHost.Size.Y.Offset + 16)
+end
+local height = math.clamp(self.Tokens:Get("HeaderHeight") + contentHeight, 88, maxHeight)
+if math.abs(self._root.Size.Y.Offset - height) >= 1 then
+self._root.Size = UDim2.fromOffset(self._root.Size.X.Offset, height)
+end
+end
+return Minimal
+end
+
 __modules["shell/Row"] = function()
 local Create = __require("runtime/Create")
 local Janitor = __require("runtime/Janitor")
@@ -19370,14 +19593,17 @@ LayoutOrder = self._order,
 Visible = self._manualVisible and self._dependencyVisible,
 Parent = self._tab:_sectionParent(self.Column),
 }, {
-Token = if self._implicit then "Canvas" else "Surface",
-Stroke = not self._implicit,
+Token = if self._implicit or w._minimal then "Canvas" else "Surface",
+Stroke = not self._implicit and not w._minimal,
 StrokeToken = "Border",
 StrokeTransparency = 0.3,
-Corner = if self._implicit then 0 else t:Get("CornerMd"),
+Corner = if self._implicit or w._minimal then 0 else t:Get("CornerMd"),
 Sheen = false,
 })
 self._janitor:Add(self._root)
+if w._minimal then
+self._root.BackgroundTransparency = 1
+end
 self._janitor:Add(self._root:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 if not self._destroyed then
 self:_updateContentLayout()
@@ -19393,19 +19619,22 @@ PaddingLeft = UDim.new(0, pad),
 PaddingRight = UDim.new(0, pad),
 Parent = self._root,
 })
-self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") else 12)
+self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") elseif w._minimal then 6 else 12)
 self._rootLayout.Parent = self._root
 if not self._implicit and self.Title then
 local headerClass = if self.Collapsible then "TextButton" else "Frame"
 self._header = Create.New(headerClass, {
 Name = "SectionHeader",
-Size = UDim2.new(1, 0, 0, self.Description and 52 or 42),
-BackgroundTransparency = 0.28,
+Size = UDim2.new(1, 0, 0, if w._minimal then 28 elseif self.Description then 52 else 42),
+BackgroundTransparency = if w._minimal then 1 else 0.28,
 BorderSizePixel = 0,
 Text = headerClass == "TextButton" and "" or nil,
 AutoButtonColor = headerClass == "TextButton" and false or nil,
 Parent = self._root,
 })
+if w._minimal then
+self._header.Visible = self.Collapsible
+end
 Create.New("UICorner", { CornerRadius = UDim.new(0, math.max(6, t:Get("CornerSm"))), Parent = self._header })
 self._headerStroke = Create.New("UIStroke", {
 Thickness = 1,
@@ -19415,6 +19644,9 @@ Parent = self._header,
 })
 w:_bind(self._header, { BackgroundColor3 = "SurfaceRaised" })
 w:_bind(self._headerStroke, { Color = "BorderSubtle" })
+if w._minimal then
+self._headerStroke.Enabled = false
+end
 self._headerAccent = Create.New("Frame", {
 Name = "AccentRail",
 Size = UDim2.fromOffset(3, 18),
@@ -19425,6 +19657,9 @@ Parent = self._header,
 })
 Create.New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._headerAccent })
 w:_bind(self._headerAccent, { BackgroundColor3 = "Accent" })
+if w._minimal then
+self._headerAccent.Visible = false
+end
 self._sectionIconHost = Create.New("Frame", {
 Name = "IconTile",
 Size = UDim2.fromOffset(28, 28),
@@ -19445,6 +19680,9 @@ AnchorPoint = Vector2.new(0.5, 0.5),
 Parent = self._sectionIconHost,
 })
 Icon.setColor(self._sectionIcon, w.Theme:Get("Accent"))
+if w._minimal then
+self._sectionIconHost.Visible = false
+end
 self._title = Create.New("TextLabel", {
 Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, if self.Description then 20 else 42),
 Position = UDim2.fromOffset(44, if self.Description then 5 else 0),
@@ -19456,6 +19694,11 @@ Text = w.Locale:Resolve(self.Title),
 Parent = self._header,
 })
 w:_bind(self._title, { TextColor3 = "Text" })
+if w._minimal then
+self._title.Position = UDim2.fromOffset(4, 0)
+self._title.Size = UDim2.new(1, if self.Collapsible then -38 else -4, 1, 0)
+self._title.TextSize = t:Get("FontSmall")
+end
 if self.Description then
 self._desc = Create.New("TextLabel", {
 Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, 16),
@@ -19469,6 +19712,9 @@ Text = w.Locale:Resolve(self.Description),
 Parent = self._header,
 })
 w:_bind(self._desc, { TextColor3 = "TextTertiary" })
+if w._minimal then
+self._desc.Visible = false
+end
 end
 if self.Collapsible then
 self._chevronBack = Create.New("Frame", {
@@ -19517,7 +19763,19 @@ end
 self:_reparentControls()
 self:_applyContainerState()
 end
+function Section:_applyMinimalHeader(multiple)
+if not self._header then
+return
+end
+local shown = multiple or self.Collapsible
+if self._header.Visible ~= shown then
+self._header.Visible = shown
+end
+end
 function Section:_wantedContentLayout()
+if self._window._minimal then
+return "Stack"
+end
 if self.Layout == "Stack" or self.Layout == "Grid" then
 return self.Layout
 end
@@ -19663,7 +19921,10 @@ self._padding.PaddingLeft = u
 self._padding.PaddingRight = u
 end
 if self._rootLayout then
-self._rootLayout.Padding = UDim.new(0, if self._implicit then t:Get("RowGap") else 12)
+self._rootLayout.Padding = UDim.new(
+0,
+if self._implicit then t:Get("RowGap") elseif self._window._minimal then 6 else 12
+)
 end
 if self._contentLayout then
 self._contentLayout.Padding = UDim.new(0, t:Get("RowGap"))
@@ -19674,13 +19935,13 @@ end
 self:_updateContentLayout()
 self:_updateAdaptiveControls(true)
 if self._title then
-self._title.TextSize = t:Get("FontTitle")
+self._title.TextSize = t:Get(if self._window._minimal then "FontSmall" else "FontTitle")
 end
 if self._desc then
 self._desc.TextSize = t:Get("FontSmall")
 end
 if self._header then
-self._header.Size = UDim2.new(1, 0, 0, self.Description and 52 or 42)
+self._header.Size = UDim2.new(1, 0, 0, if self._window._minimal then 28 elseif self.Description then 52 else 42)
 end
 end
 function Section:_refreshSeparators()
@@ -20082,7 +20343,7 @@ PaddingLeft = UDim.new(0, 0),
 PaddingRight = UDim.new(0, 0),
 Parent = self._page,
 })
-self._introHeight = if self.Description then 54 else 46
+self._introHeight = if window._minimal then 0 elseif self.Description then 54 else 46
 local pagePadding = tokens:Get("PagePadding")
 self._pageIntro = New("Frame", {
 Name = "PageIntro",
@@ -20091,6 +20352,7 @@ Position = UDim2.fromOffset(pagePadding, 0),
 BackgroundTransparency = 1,
 Parent = self._page,
 })
+self._pageIntro.Visible = not window._minimal
 self._pageIconBack = New("Frame", {
 Name = "PageIconTile",
 Size = UDim2.fromOffset(34, 34),
@@ -20199,6 +20461,9 @@ end
 function Tab:_applyTokens()
 local t = self._window.Tokens
 local pagePadding = t:Get("PagePadding")
+if self._window._minimal then
+self._introHeight = 0
+end
 if self._pagePadding then
 self._pagePadding.PaddingTop = UDim.new(0, pagePadding)
 self._pagePadding.PaddingBottom = UDim.new(0, pagePadding)
@@ -20214,7 +20479,10 @@ self._sectionHost.Position = UDim2.fromOffset(pagePadding, self._introHeight)
 self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 end
 if self._emptyState then
-self._emptyState.Position = UDim2.fromOffset(pagePadding, self._introHeight + 24)
+self._emptyState.Position = UDim2.fromOffset(
+pagePadding,
+self._introHeight + (if self._window._minimal then 0 else 24)
+)
 self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 self._emptyState.TextSize = t:Get("FontBody")
 end
@@ -20270,7 +20538,8 @@ local edgeInset = 1
 local layoutWidth = math.max(1, available - edgeInset * 2)
 local gap = t:Get("ColumnGap")
 local minWidth = t:Get("MinSectionWidth")
-local twoColumn = (layout ~= "Drawer") and layoutWidth >= math.max(t:Get("TwoColumnMinWidth"), minWidth * 2 + gap)
+local twoColumn = (layout ~= "Drawer" and not self._window._minimal)
+and layoutWidth >= math.max(t:Get("TwoColumnMinWidth"), minWidth * 2 + gap)
 self._twoColumn = twoColumn
 if self._column1 then
 self._column1.Visible = false
@@ -20285,6 +20554,11 @@ section._root.Parent = self._sectionHost
 table.insert(visible, section)
 end
 end
+if self._window._minimal then
+for _, section in visible do
+section:_applyMinimalHeader(#visible > 1)
+end
+end
 local function heightOf(section)
 local physical = (section._root and section._root.AbsoluteSize.Y or scale)
 return math.max(1, math.floor((physical / scale) + 0.5))
@@ -20297,6 +20571,9 @@ sec._root.Position = UDim2.fromOffset(edgeInset, y)
 y += heightOf(sec) + gap
 end
 self._sectionHost.Size = UDim2.new(1, -(t:Get("PagePadding") * 2), 0, math.max(0, y - gap + edgeInset))
+if self._window._minimal and self._selected then
+self._window:_syncMinimalHeight()
+end
 return
 end
 local leftWidth = math.max(1, math.floor((layoutWidth - gap) / 2))
@@ -20329,6 +20606,9 @@ y += rowHeight + gap
 end
 end
 self._sectionHost.Size = UDim2.new(1, -(t:Get("PagePadding") * 2), 0, math.max(0, y - gap + edgeInset))
+if self._window._minimal and self._selected then
+self._window:_syncMinimalHeight()
+end
 end
 function Tab:AddSection(options)
 options = options or {}
@@ -20499,7 +20779,7 @@ if self._pageDescription then
 self._pageDescription:Destroy()
 self._pageDescription = nil
 end
-self._introHeight = if description then 54 else 46
+self._introHeight = if self._window._minimal then 0 elseif description then 54 else 46
 local pagePadding = self._window.Tokens:Get("PagePadding")
 if self._pageIntro then
 self._pageIntro.Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight)
@@ -20510,7 +20790,10 @@ self._sectionHost.Position = UDim2.fromOffset(pagePadding, self._introHeight)
 self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 end
 if self._emptyState then
-self._emptyState.Position = UDim2.fromOffset(pagePadding, self._introHeight + 24)
+self._emptyState.Position = UDim2.fromOffset(
+pagePadding,
+self._introHeight + (if self._window._minimal then 0 else 24)
+)
 self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 end
 self:_scheduleSectionLayout()
@@ -20577,7 +20860,13 @@ end
 function Tab:SetVisible(visible: boolean)
 self._button.Visible = visible
 if not visible and self._selected then
+if self._window._minimal then
+self:_setSelected(false)
+end
 self._window:_selectFirstVisible()
+end
+if self._window._minimal then
+self._window:_refreshMinimalMenu()
 end
 return self
 end
@@ -20590,7 +20879,13 @@ if self._label then
 self._label.TextTransparency = if self.Locked then 0.38 else 0
 end
 if self.Locked and self._selected then
+if self._window._minimal then
+self:_setSelected(false)
+end
 self._window:_selectFirstVisible()
+end
+if self._window._minimal then
+self._window:_refreshMinimalMenu()
 end
 return self
 end
@@ -20618,6 +20913,9 @@ local wasSelected = self._selected
 self._janitor:Destroy()
 if wasSelected and not window._destroying then
 window:_selectFirstVisible()
+end
+if window._minimal and not window._destroying then
+window:_refreshMinimalMenu()
 end
 end
 return Tab
@@ -20993,6 +21291,7 @@ local Util = __require("runtime/Util")
 local Tab = __require("shell/Tab")
 local WindowChrome = __require("shell/WindowChrome")
 local WindowLayout = __require("shell/WindowLayout")
+local Minimal = __require("shell/Minimal")
 local New = Create.New
 local Window = {}
 Window.__index = Window
@@ -21000,6 +21299,9 @@ for name, method in pairs(WindowChrome) do
 Window[name] = method
 end
 for name, method in pairs(WindowLayout) do
+Window[name] = method
+end
+for name, method in pairs(Minimal) do
 Window[name] = method
 end
 function Window.new(context, options)
@@ -21023,10 +21325,13 @@ _janitor = context.Janitor,
 _tabs = {},
 _active = nil,
 _layout = nil,
+_minimal = options.Presentation == "Minimal",
 _drawer = nil,
 _visible = true,
-_size = options.Size or UDim2.fromOffset(720, 480),
-_minSize = options.MinSize or Vector2.new(500, 340),
+_size = options.Size
+or (if options.Presentation == "Minimal" then UDim2.fromOffset(340, 0) else UDim2.fromOffset(720, 480)),
+_minSize = options.MinSize
+or (if options.Presentation == "Minimal" then Vector2.new(280, 88) else Vector2.new(500, 340)),
 _themeHandles = {},
 _groups = {},
 _groupSeq = 0,
@@ -21034,7 +21339,10 @@ _locked = false,
 _scale = options.Scale or 1,
 _rememberGeometry = options.RememberGeometry ~= false,
 _sidebarHidden = options.SidebarHidden == true,
-_minContainerWidth = math.max(320, tonumber(options.MinContainerWidth) or 500),
+_minContainerWidth = math.max(
+if options.Presentation == "Minimal" then 280 else 320,
+tonumber(options.MinContainerWidth) or (if options.Presentation == "Minimal" then 280 else 500)
+),
 _minSidebarWidth = math.max(96, tonumber(options.MinSidebarWidth) or 120),
 _sidebarCompactWidth = math.max(48, tonumber(options.SidebarCompactWidth) or context.Tokens:Get("RailWidth")),
 _sidebarCollapseThreshold = math.max(320, tonumber(options.SidebarCollapseThreshold) or 700),
@@ -21134,6 +21442,9 @@ end))
 return self
 end
 function Window:_responsiveLayout()
+if self._minimal then
+return "Minimal"
+end
 local width = self.Device.Viewport.X
 if width < self._sidebarCollapseThreshold then
 return "Drawer"
@@ -21207,6 +21518,9 @@ self:_buildHeader()
 self:_buildBody()
 self:_buildFooter()
 self:_buildResizeGrip()
+if self._minimal then
+self:_buildMinimal()
+end
 self:SetWindowOpacity(self._windowOpacity)
 if self._backgroundImageSource then
 self:SetBackgroundImage(self._backgroundImageSource, self._backgroundImageTransparency)
@@ -21333,6 +21647,9 @@ else
 tab:_setSelected(false)
 end
 self:_applyLayout(self._layout, true)
+if self._minimal then
+self:_refreshMinimalMenu()
+end
 if not options._system and self._settingsService and not self._settingsService._mounted then
 self._settingsService:_ensureMounted()
 end
@@ -21392,6 +21709,10 @@ TweenInfo.new(tonumber(tr.Duration) or 0.12, Enum.EasingStyle.Quad, Enum.EasingD
 )
 end
 self:_refreshHeaderTitle()
+if self._minimal then
+self:_refreshMinimalMenu()
+self:_scheduleSectionLayouts()
+end
 self:CloseDrawer()
 end
 function Window:_selectFirstVisible()
@@ -21401,6 +21722,9 @@ if tab._button.Visible and not tab.Locked then
 self:_selectTab(tab)
 return
 end
+end
+if self._minimal then
+self:_syncMinimalHeight()
 end
 end
 function Window:GetInstance(): Instance
@@ -21802,6 +22126,11 @@ end
 end
 function WindowChrome:_refreshTopbarLayout()
 if not self._topbarExtras or not self._titleLabel then
+return
+end
+if self._minimal then
+self._topbarExtras.Visible = false
+self._titleLabel.Size = UDim2.new(1, -148, 1, 0)
 return
 end
 local count = 0
@@ -22272,7 +22601,7 @@ end
 function WindowChrome:SetSubtitle(text: string?)
 self.Subtitle = text
 self._subtitleLabel.Text = text or ""
-self._subtitleLabel.Visible = text ~= nil and self._layout ~= "Drawer"
+self._subtitleLabel.Visible = text ~= nil and self._layout ~= "Drawer" and not self._minimal
 self:_applyTokens()
 return self
 end
@@ -22479,6 +22808,9 @@ end
 for _, tab in self._tabs do
 tab:_applySectionLayout(self._layout)
 end
+if self._minimal then
+self:_syncMinimalHeight()
+end
 end)
 self._janitor:Add(thread, nil, "sectionLayoutsTask")
 end
@@ -22487,6 +22819,10 @@ if self._layout == layout and not initial then
 return
 end
 self._layout = layout
+if self._minimal then
+self:_applyMinimalLayout()
+return
+end
 if not initial then
 self.Layers:DismissAll()
 end
@@ -22525,6 +22861,10 @@ self:_refreshHeaderTitle()
 self:_refreshTopbarLayout()
 end
 function WindowLayout:_applyTokens()
+if self._minimal then
+self:_applyMinimalTokens()
+return
+end
 local tokens = self.Tokens
 local layout = self._layout
 local drawerMode = layout == "Drawer"
@@ -22578,6 +22918,16 @@ self:_refreshTopbarLayout()
 self:_scheduleSectionLayouts()
 end
 function WindowLayout:_applyGeometry()
+if self._minimal then
+self._root.AnchorPoint = Vector2.new(0.5, 0.5)
+local _, safeSize = self.Device:SafeArea()
+local scale = math.max(0.01, self._scale or 1)
+local width = math.min(math.max(1, self._size.X.Offset), math.max(1, safeSize.X / scale - 16))
+self._root.Size = UDim2.fromOffset(width, self._root.Size.Y.Offset)
+self:_syncMinimalHeight()
+self:_scheduleSectionLayouts()
+return
+end
 if self._layout == "Drawer" then
 local position, size = self.Device:SafeArea()
 self._root.AnchorPoint = Vector2.new(0, 0)
@@ -22636,10 +22986,10 @@ end
 function WindowLayout:SetLocked(locked)
 self._locked = locked == true
 if self._grip then
-self._grip.Visible = not self._locked and self._layout ~= "Drawer"
+self._grip.Visible = not self._locked and self._layout ~= "Drawer" and not self._minimal
 end
 if self._footerHint then
-self._footerHint.Visible = not self._locked and self._layout ~= "Drawer"
+self._footerHint.Visible = not self._locked and self._layout ~= "Drawer" and not self._minimal
 end
 return self
 end
@@ -22734,7 +23084,7 @@ end
 function WindowLayout:SetSearchEnabled(enabled)
 self._disableSearch = enabled == false
 if self._searchButton then
-self._searchButton.Visible = not self._disableSearch
+self._searchButton.Visible = not self._disableSearch and not self._minimal
 end
 return self
 end
@@ -22838,6 +23188,10 @@ if typeof(size) ~= "UDim2" then
 error("[BobloUI] Window:SetSize expects UDim2 or Vector2.", 2)
 end
 self._size = size
+if self._minimal then
+self:_applyGeometry()
+return self
+end
 if self._layout ~= "Drawer" then
 self._root.Size = size
 end
@@ -22865,10 +23219,14 @@ SidebarCompacted = self:IsSidebarCompacted(),
 }
 end
 function WindowLayout:ResetGeometry()
-self._size = UDim2.fromOffset(720, 480)
+self._size = if self._minimal then UDim2.fromOffset(340, 0) else UDim2.fromOffset(720, 480)
 self._root.Position = UDim2.fromScale(0.5, 0.5)
 if self._layout ~= "Drawer" then
+if self._minimal then
+self:_applyGeometry()
+else
 self._root.Size = self._size
+end
 end
 self:SetScale(1)
 self:SetLocked(false)

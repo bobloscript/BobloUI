@@ -261,6 +261,9 @@ function Base:_mount()
 		LayoutOrder = self._order or 0,
 		Parent = self._section:_controlParent(self),
 	})
+	if w._minimal then
+		self._root.BackgroundTransparency = 0.78
+	end
 	self._janitor:Add(self._root)
 	Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._root })
 	w:_bind(self._root, { BackgroundColor3 = "ControlHover" })
@@ -388,7 +391,10 @@ function Base:_applyHoverVisual(hover)
 	end
 	self._root.BackgroundColor3 = self._window.Theme:Get("ControlHover")
 	local active = hover and not self._disabled
-	self._window.Motion:Tween(self._root, "Fast", { BackgroundTransparency = if active then 0.74 else 1 })
+	self._window.Motion:Tween(self._root, "Fast", {
+		BackgroundTransparency = if active then (if self._window._minimal then 0.54 else 0.74)
+			else (if self._window._minimal then 0.78 else 1),
+	})
 	if self._hoverRail then
 		self._window.Motion:Tween(self._hoverRail, "Fast", { BackgroundTransparency = if active then 0.16 else 1 })
 	end

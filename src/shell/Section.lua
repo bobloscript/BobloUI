@@ -110,14 +110,17 @@ function Section:_mount()
 		Visible = self._manualVisible and self._dependencyVisible,
 		Parent = self._tab:_sectionParent(self.Column),
 	}, {
-		Token = if self._implicit then "Canvas" else "Surface",
-		Stroke = not self._implicit,
+		Token = if self._implicit or w._minimal then "Canvas" else "Surface",
+		Stroke = not self._implicit and not w._minimal,
 		StrokeToken = "Border",
 		StrokeTransparency = 0.3,
-		Corner = if self._implicit then 0 else t:Get("CornerMd"),
+		Corner = if self._implicit or w._minimal then 0 else t:Get("CornerMd"),
 		Sheen = false,
 	})
 	self._janitor:Add(self._root)
+	if w._minimal then
+		self._root.BackgroundTransparency = 1
+	end
 	self._janitor:Add(self._root:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 		if not self._destroyed then
 			self:_updateContentLayout()
@@ -133,19 +136,22 @@ function Section:_mount()
 		PaddingRight = UDim.new(0, pad),
 		Parent = self._root,
 	})
-	self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") else 12)
+	self._rootLayout = Create.List(if self._implicit then t:Get("RowGap") elseif w._minimal then 6 else 12)
 	self._rootLayout.Parent = self._root
 	if not self._implicit and self.Title then
 		local headerClass = if self.Collapsible then "TextButton" else "Frame"
 		self._header = Create.New(headerClass, {
 			Name = "SectionHeader",
-			Size = UDim2.new(1, 0, 0, self.Description and 52 or 42),
-			BackgroundTransparency = 0.28,
+			Size = UDim2.new(1, 0, 0, if w._minimal then 28 elseif self.Description then 52 else 42),
+			BackgroundTransparency = if w._minimal then 1 else 0.28,
 			BorderSizePixel = 0,
 			Text = headerClass == "TextButton" and "" or nil,
 			AutoButtonColor = headerClass == "TextButton" and false or nil,
 			Parent = self._root,
 		})
+		if w._minimal then
+			self._header.Visible = self.Collapsible
+		end
 		Create.New("UICorner", { CornerRadius = UDim.new(0, math.max(6, t:Get("CornerSm"))), Parent = self._header })
 		self._headerStroke = Create.New("UIStroke", {
 			Thickness = 1,
@@ -155,6 +161,9 @@ function Section:_mount()
 		})
 		w:_bind(self._header, { BackgroundColor3 = "SurfaceRaised" })
 		w:_bind(self._headerStroke, { Color = "BorderSubtle" })
+		if w._minimal then
+			self._headerStroke.Enabled = false
+		end
 		self._headerAccent = Create.New("Frame", {
 			Name = "AccentRail",
 			Size = UDim2.fromOffset(3, 18),
@@ -165,6 +174,9 @@ function Section:_mount()
 		})
 		Create.New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._headerAccent })
 		w:_bind(self._headerAccent, { BackgroundColor3 = "Accent" })
+		if w._minimal then
+			self._headerAccent.Visible = false
+		end
 		self._sectionIconHost = Create.New("Frame", {
 			Name = "IconTile",
 			Size = UDim2.fromOffset(28, 28),
@@ -185,6 +197,9 @@ function Section:_mount()
 			Parent = self._sectionIconHost,
 		})
 		Icon.setColor(self._sectionIcon, w.Theme:Get("Accent"))
+		if w._minimal then
+			self._sectionIconHost.Visible = false
+		end
 		self._title = Create.New("TextLabel", {
 			Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, if self.Description then 20 else 42),
 			Position = UDim2.fromOffset(44, if self.Description then 5 else 0),
@@ -196,6 +211,11 @@ function Section:_mount()
 			Parent = self._header,
 		})
 		w:_bind(self._title, { TextColor3 = "Text" })
+		if w._minimal then
+			self._title.Position = UDim2.fromOffset(4, 0)
+			self._title.Size = UDim2.new(1, if self.Collapsible then -38 else -4, 1, 0)
+			self._title.TextSize = t:Get("FontSmall")
+		end
 		if self.Description then
 			self._desc = Create.New("TextLabel", {
 				Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, 16),
@@ -209,6 +229,9 @@ function Section:_mount()
 				Parent = self._header,
 			})
 			w:_bind(self._desc, { TextColor3 = "TextTertiary" })
+			if w._minimal then
+				self._desc.Visible = false
+			end
 		end
 		if self.Collapsible then
 			self._chevronBack = Create.New("Frame", {
@@ -257,7 +280,19 @@ function Section:_mount()
 	self:_reparentControls()
 	self:_applyContainerState()
 end
+function Section:_applyMinimalHeader(multiple)
+	if not self._header then
+		return
+	end
+	local shown = multiple or self.Collapsible
+	if self._header.Visible ~= shown then
+		self._header.Visible = shown
+	end
+end
 function Section:_wantedContentLayout()
+	if self._window._minimal then
+		return "Stack"
+	end
 	if self.Layout == "Stack" or self.Layout == "Grid" then
 		return self.Layout
 	end
@@ -404,7 +439,10 @@ function Section:_applyTokens()
 		self._padding.PaddingRight = u
 	end
 	if self._rootLayout then
-		self._rootLayout.Padding = UDim.new(0, if self._implicit then t:Get("RowGap") else 12)
+		self._rootLayout.Padding = UDim.new(
+			0,
+			if self._implicit then t:Get("RowGap") elseif self._window._minimal then 6 else 12
+		)
 	end
 	if self._contentLayout then
 		self._contentLayout.Padding = UDim.new(0, t:Get("RowGap"))
@@ -415,13 +453,13 @@ function Section:_applyTokens()
 	self:_updateContentLayout()
 	self:_updateAdaptiveControls(true)
 	if self._title then
-		self._title.TextSize = t:Get("FontTitle")
+		self._title.TextSize = t:Get(if self._window._minimal then "FontSmall" else "FontTitle")
 	end
 	if self._desc then
 		self._desc.TextSize = t:Get("FontSmall")
 	end
 	if self._header then
-		self._header.Size = UDim2.new(1, 0, 0, self.Description and 52 or 42)
+		self._header.Size = UDim2.new(1, 0, 0, if self._window._minimal then 28 elseif self.Description then 52 else 42)
 	end
 end
 function Section:_refreshSeparators()

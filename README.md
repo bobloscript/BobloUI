@@ -12,6 +12,7 @@ Responsive, AI-first UI framework for Roblox script hubs.
 - [docs/extending.md](docs/extending.md) — changing BobloUI itself: build pipeline, layers, adding controls
 - [docs/troubleshooting.md](docs/troubleshooting.md) — icons, configs, performance
 - [docs/index.md](docs/index.md) — full map, including generated per-control references
+- [docs/minimal.md](docs/minimal.md) — a compact window for scripts with few controls
 
 ## Install
 
@@ -82,6 +83,10 @@ Main:AddButton({Title="Run", Callback=function() print("run") end})
 ```
 
 Direct `Tab:Add*` calls use an implicit section internally.
+
+For small scripts, add `Presentation = "Minimal"` to `CreateWindow`. The same
+`AddTab` and control APIs render in a narrow, content-sized panel; see
+[examples/minimal.lua](examples/minimal.lua).
 
 ## Visual identity and icons
 

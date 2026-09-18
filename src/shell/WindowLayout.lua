@@ -214,6 +214,9 @@ function WindowLayout:_scheduleSectionLayouts()
 		for _, tab in self._tabs do
 			tab:_applySectionLayout(self._layout)
 		end
+		if self._minimal then
+			self:_syncMinimalHeight()
+		end
 	end)
 	self._janitor:Add(thread, nil, "sectionLayoutsTask")
 end
@@ -223,6 +226,10 @@ function WindowLayout:_applyLayout(layout: string, initial: boolean?)
 		return
 	end
 	self._layout = layout
+	if self._minimal then
+		self:_applyMinimalLayout()
+		return
+	end
 
 	if not initial then
 		self.Layers:DismissAll()
@@ -270,6 +277,10 @@ end
 --- Re-reads every metric from Tokens. Called on density change and on layout
 --- change; never rebuilds Instances.
 function WindowLayout:_applyTokens()
+	if self._minimal then
+		self:_applyMinimalTokens()
+		return
+	end
 	local tokens = self.Tokens
 	local layout = self._layout
 	local drawerMode = layout == "Drawer"
@@ -330,6 +341,16 @@ function WindowLayout:_applyTokens()
 end
 
 function WindowLayout:_applyGeometry()
+	if self._minimal then
+		self._root.AnchorPoint = Vector2.new(0.5, 0.5)
+		local _, safeSize = self.Device:SafeArea()
+		local scale = math.max(0.01, self._scale or 1)
+		local width = math.min(math.max(1, self._size.X.Offset), math.max(1, safeSize.X / scale - 16))
+		self._root.Size = UDim2.fromOffset(width, self._root.Size.Y.Offset)
+		self:_syncMinimalHeight()
+		self:_scheduleSectionLayouts()
+		return
+	end
 	if self._layout == "Drawer" then
 		local position, size = self.Device:SafeArea()
 		self._root.AnchorPoint = Vector2.new(0, 0)
@@ -397,10 +418,10 @@ end
 function WindowLayout:SetLocked(locked)
 	self._locked = locked == true
 	if self._grip then
-		self._grip.Visible = not self._locked and self._layout ~= "Drawer"
+		self._grip.Visible = not self._locked and self._layout ~= "Drawer" and not self._minimal
 	end
 	if self._footerHint then
-		self._footerHint.Visible = not self._locked and self._layout ~= "Drawer"
+		self._footerHint.Visible = not self._locked and self._layout ~= "Drawer" and not self._minimal
 	end
 	return self
 end
@@ -495,7 +516,7 @@ end
 function WindowLayout:SetSearchEnabled(enabled)
 	self._disableSearch = enabled == false
 	if self._searchButton then
-		self._searchButton.Visible = not self._disableSearch
+		self._searchButton.Visible = not self._disableSearch and not self._minimal
 	end
 	return self
 end
@@ -600,6 +621,10 @@ function WindowLayout:SetSize(size)
 		error("[BobloUI] Window:SetSize expects UDim2 or Vector2.", 2)
 	end
 	self._size = size
+	if self._minimal then
+		self:_applyGeometry()
+		return self
+	end
 	if self._layout ~= "Drawer" then
 		self._root.Size = size
 	end
@@ -627,10 +652,14 @@ function WindowLayout:GetGeometry()
 	}
 end
 function WindowLayout:ResetGeometry()
-	self._size = UDim2.fromOffset(720, 480)
+	self._size = if self._minimal then UDim2.fromOffset(340, 0) else UDim2.fromOffset(720, 480)
 	self._root.Position = UDim2.fromScale(0.5, 0.5)
 	if self._layout ~= "Drawer" then
-		self._root.Size = self._size
+		if self._minimal then
+			self:_applyGeometry()
+		else
+			self._root.Size = self._size
+		end
 	end
 	self:SetScale(1)
 	self:SetLocked(false)

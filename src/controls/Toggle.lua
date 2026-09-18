@@ -14,7 +14,7 @@ function Toggle:AddKeybind(options)
 end
 function Toggle.new(section, options)
 	local self = setmetatable({}, Toggle)
-	self.Style = options.Style or "Switch"
+	self.Style = options.Style or (if section._window._minimal then "Checkbox" else "Switch")
 	Base.init(self, section, "Toggle", options, { Stateful = true, Default = options.Default == true })
 	return Base.finish(self)
 end
@@ -63,6 +63,24 @@ function Toggle:_mountValue(host)
 			self:Flip()
 		end
 	end))
+	if w._minimal then
+		self._root.Active = true
+		self._janitor:Add(self._root.InputBegan:Connect(function(input)
+			if self:IsDisabled() or (
+				input.UserInputType ~= Enum.UserInputType.MouseButton1
+				and input.UserInputType ~= Enum.UserInputType.Touch
+			) then
+				return
+			end
+			local point = input.Position
+			local buttonPos, buttonSize = self._button.AbsolutePosition, self._button.AbsoluteSize
+			if point.X >= buttonPos.X and point.X <= buttonPos.X + buttonSize.X
+				and point.Y >= buttonPos.Y and point.Y <= buttonPos.Y + buttonSize.Y then
+				return
+			end
+			self:Flip()
+		end))
+	end
 end
 function Toggle:_render(value)
 	if not self._button then

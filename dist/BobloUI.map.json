@@ -61,13 +61,14 @@
   "services/Sound": 257,
   "services/Storage": 261,
   "services/ThemeManager": 265,
-  "shell/Row": 269,
-  "shell/Section": 273,
-  "shell/Tab": 277,
-  "shell/TabBox": 281,
-  "shell/Window": 285,
-  "shell/WindowChrome": 289,
-  "shell/WindowLayout": 293,
-  "themes/Dark": 297,
-  "themes/Light": 301
+  "shell/Minimal": 269,
+  "shell/Row": 273,
+  "shell/Section": 277,
+  "shell/Tab": 281,
+  "shell/TabBox": 285,
+  "shell/Window": 289,
+  "shell/WindowChrome": 293,
+  "shell/WindowLayout": 297,
+  "themes/Dark": 301,
+  "themes/Light": 305
 }
