@@ -287,6 +287,7 @@ function HUD:_ensureRow(handle, id)
 	if self._rows[id] then
 		return
 	end
+	self:_ensureKeybind()
 	local w = self._window
 	local isMobile = w.Device.Class == "Phone" and handle.Mobile ~= false
 
