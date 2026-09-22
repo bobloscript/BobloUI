@@ -65,36 +65,19 @@ function Tab.new(window, options)
 	self._indicator = indicator
 	self._janitor:Add(button)
 
-	-- A small icon tile makes every destination identifiable before its label is
-	-- read, and keeps rail mode from feeling like a row of loose glyphs.
-	local avatarBack = New("Frame", {
-		Name = "IconTile",
-		Size = UDim2.fromOffset(26, 26),
-		Position = UDim2.new(0, 6, 0.5, 0),
+	-- Plain Lucide icon, no tile.
+	local avatar = Icon.new(window, options.Icon or "star", {
+		Name = "Avatar",
+		Size = UDim2.fromOffset(tokens:Get("IconSm"), tokens:Get("IconSm")),
+		Position = UDim2.new(0, 8, 0.5, 0),
 		AnchorPoint = Vector2.new(0, 0.5),
-		BorderSizePixel = 0,
-		BackgroundTransparency = 0.82,
 		Parent = button,
 	})
-	New("UICorner", { CornerRadius = UDim.new(0, 7), Parent = avatarBack })
-	local avatarStroke = New("UIStroke", { Thickness = 1, Transparency = 0.68, Parent = avatarBack })
-	window:_bind(avatarBack, { BackgroundColor3 = "AccentSoft" })
-	window:_bind(avatarStroke, { Color = "AccentBorder" })
-
-	-- Built-in vector icons keep navigation consistent even without external assets.
-	local avatarProps = {
-		Name = "Avatar",
-		Size = UDim2.fromOffset(tokens:Get("IconMd"), tokens:Get("IconMd")),
-		Position = UDim2.fromScale(0.5, 0.5),
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Parent = avatarBack,
-	}
-	local avatar = Icon.new(window, options.Icon or "star", avatarProps)
 
 	local label = New("TextLabel", {
 		Name = "Label",
-		Size = UDim2.new(1, -48, 1, 0),
-		Position = UDim2.new(0, 40, 0, 0),
+		Size = UDim2.new(1, -36, 1, 0),
+		Position = UDim2.new(0, 30, 0, 0),
 		BackgroundTransparency = 1,
 		Font = window.Fonts.Medium,
 		TextSize = tokens:Get("FontBody"),
@@ -108,8 +91,6 @@ function Tab.new(window, options)
 	window:_bind(label, { TextColor3 = "TextSecondary" })
 
 	self._button = button
-	self._avatarBack = avatarBack
-	self._avatarStroke = avatarStroke
 	self._avatar = avatar
 	self._label = label
 	self._badge = nil
@@ -162,23 +143,23 @@ function Tab.new(window, options)
 		PaddingRight = UDim.new(0, 0),
 		Parent = self._page,
 	})
-	-- Keep a 12 px visual gap below the 34 px icon when a tab has no description.
-	-- Tabs with a description already end at y=42 inside a 54 px intro.
-	self._introHeight = if window._minimal then 0 elseif self.Description then 54 else 46
+	-- PageIntro: hidden by default in redesigned UI. Title is shown in sidebar.
+	self._introHeight = 0
 	local pagePadding = tokens:Get("PagePadding")
 	self._pageIntro = New("Frame", {
 		Name = "PageIntro",
-		Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight),
+		Size = UDim2.new(1, -(pagePadding * 2), 0, 0),
 		Position = UDim2.fromOffset(pagePadding, 0),
 		BackgroundTransparency = 1,
+		Visible = false,
 		Parent = self._page,
 	})
-	self._pageIntro.Visible = not window._minimal
 	self._pageIconBack = New("Frame", {
 		Name = "PageIconTile",
 		Size = UDim2.fromOffset(34, 34),
 		Position = UDim2.fromOffset(0, 0),
 		BorderSizePixel = 0,
+		Visible = false,
 		Parent = self._pageIntro,
 	})
 	New("UICorner", { CornerRadius = UDim.new(0, 10), Parent = self._pageIconBack })
@@ -542,18 +523,8 @@ function Tab:_applyNavVisual(hover: boolean)
 	self._navHover = hover == true
 	local selected = self._selected
 	self._window.Motion:Tween(self._button, "Fast", {
-		BackgroundTransparency = if selected then 0.56 elseif hover then 0.76 else 1,
+		BackgroundTransparency = if selected then 0.88 elseif hover then 0.92 else 1,
 	}, "Tabs")
-	if self._avatarBack then
-		self._window.Motion:Tween(self._avatarBack, "Fast", {
-			BackgroundTransparency = if selected then 0.4 elseif hover then 0.68 else 0.82,
-		}, "Tabs")
-	end
-	if self._avatarStroke then
-		self._window.Motion:Tween(self._avatarStroke, "Fast", {
-			Transparency = if selected then 0.22 elseif hover then 0.48 else 0.68,
-		}, "Tabs")
-	end
 end
 
 function Tab:_setSelected(selected: boolean)
@@ -630,7 +601,7 @@ function Tab:SetDescription(description: string?)
 		self._pageDescription:Destroy()
 		self._pageDescription = nil
 	end
-	self._introHeight = if self._window._minimal then 0 elseif description then 54 else 46
+	self._introHeight = 0
 	local pagePadding = self._window.Tokens:Get("PagePadding")
 	if self._pageIntro then
 		self._pageIntro.Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight)
@@ -675,7 +646,7 @@ function Tab:SetIcon(icon)
 		Size = UDim2.fromOffset(t:Get("IconMd"), t:Get("IconMd")),
 		Position = UDim2.fromScale(0.5, 0.5),
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Parent = self._avatarBack or self._button,
+		Parent = self._button,
 	}
 	self._avatar = Icon.new(self._window, icon or "star", props)
 	if self._pageIcon then

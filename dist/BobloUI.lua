@@ -357,17 +357,6 @@ function Base:_mount()
 	self._janitor:Add(self._root)
 	Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._root })
 	w:_bind(self._root, { BackgroundColor3 = "ControlHover" })
-	self._hoverRail = Create.New("Frame", {
-		Name = "HoverRail",
-		Size = UDim2.fromOffset(2, 18),
-		Position = UDim2.new(0, 0, 0.5, 0),
-		AnchorPoint = Vector2.new(0, 0.5),
-		BorderSizePixel = 0,
-		BackgroundTransparency = 1,
-		Parent = self._root,
-	})
-	Create.New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._hoverRail })
-	w:_bind(self._hoverRail, { BackgroundColor3 = "Accent" })
 	self._separator = Create.New("Frame", {
 		Name = "Separator",
 		Size = UDim2.new(1, -pad * 2, 0, 1),
@@ -448,7 +437,7 @@ function Base:_mount()
 	self._disabledOverlay = Create.New("Frame", {
 		Name = "DisabledOverlay",
 		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 0.58,
+		BackgroundTransparency = 0.65,
 		BorderSizePixel = 0,
 		Active = true,
 		Visible = false,
@@ -457,6 +446,14 @@ function Base:_mount()
 	})
 	Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._disabledOverlay })
 	w:_bind(self._disabledOverlay, { BackgroundColor3 = "Canvas" })
+
+	self._focusStroke = Create.New("UIStroke", {
+		Name = "FocusStroke",
+		Thickness = 1.5,
+		Transparency = 1,
+		Parent = self._root,
+	})
+	w:_bind(self._focusStroke, { Color = "Accent" })
 
 	self._janitor:Add(self._root.MouseEnter:Connect(function()
 		self:_applyHoverVisual(true)
@@ -482,12 +479,9 @@ function Base:_applyHoverVisual(hover)
 	self._root.BackgroundColor3 = self._window.Theme:Get("ControlHover")
 	local active = hover and not self._disabled
 	self._window.Motion:Tween(self._root, "Fast", {
-		BackgroundTransparency = if active then (if self._window._minimal then 0.54 else 0.74)
-			else (if self._window._minimal then 0.78 else 1),
+		BackgroundTransparency = if active then (if self._window._minimal then 0.88 else 0.92)
+			else (if self._window._minimal then 0.94 else 1),
 	})
-	if self._hoverRail then
-		self._window.Motion:Tween(self._hoverRail, "Fast", { BackgroundTransparency = if active then 0.16 else 1 })
-	end
 end
 function Base:_resolve(v)
 	return self._window.Locale and self._window.Locale:Resolve(v) or v
@@ -2979,6 +2973,7 @@ function Keybind.new(section, options)
 	self.Mobile = options.Mobile ~= false
 	self.MobileText = options.MobileText or options.Title
 	self.NoUI = options.NoUI == true
+	self.ShowInHUD = options.ShowInHUD
 	self._attached = options.AttachTo
 	local syncToggle = if options.SyncToggle ~= nil then options.SyncToggle else options.SyncToggleState
 	self.SyncToggle = if syncToggle == nil
@@ -4902,6 +4897,7 @@ local WINDOW_OPTIONS = {
 	"NotificationPosition",
 	"Watermark",
 	"KeybindHUD",
+	"KeybindHUDSide",
 	"CustomCursor",
 }
 local function checkOptions(options)
@@ -5378,7 +5374,17 @@ function BobloUI:CreateWindow(options)
 		return self
 	end
 	function window:SetKeybindHUD(enabled)
-		hud:SetKeybindHUD(enabled)
+		if enabled == true then
+			hud:SetKeybindHUD("Auto")
+		elseif enabled == false then
+			hud:SetKeybindHUD(false)
+		else
+			hud:SetKeybindHUD(enabled)
+		end
+		return self
+	end
+	function window:SetKeybindHUDSide(side)
+		hud:SetKeybindHUDSide(side)
 		return self
 	end
 	function window:SetCustomCursor(enabled, options)
@@ -5507,7 +5513,10 @@ function BobloUI:CreateWindow(options)
 		window:SetWatermark(options.Watermark)
 	end
 	if options.KeybindHUD then
-		window:SetKeybindHUD(true)
+		window:SetKeybindHUD(options.KeybindHUD)
+	end
+	if options.KeybindHUDSide then
+		window:SetKeybindHUDSide(options.KeybindHUDSide)
 	end
 	if options.CustomCursor then
 		window:SetCustomCursor(true, type(options.CustomCursor) == "table" and options.CustomCursor or nil)
@@ -7656,106 +7665,106 @@ Tokens.Fonts = {
 
 Tokens.Profiles = {
 	Comfortable = {
-		ControlHeight = 47,
-		ControlPadding = 13,
-		ControlRadius = 8,
+		ControlHeight = 40,
+		ControlPadding = 12,
+		ControlRadius = 5,
 		FieldHeight = 34,
-		FieldRadius = 8,
+		FieldRadius = 4,
 		RowGap = 2,
-		SectionGap = 14,
-		ColumnGap = 14,
-		TwoColumnMinWidth = 586,
-		MinSectionWidth = 286,
-		ControlStackBreakpoint = 300,
+		SectionGap = 12,
+		ColumnGap = 12,
+		TwoColumnMinWidth = 560,
+		MinSectionWidth = 268,
+		ControlStackBreakpoint = 280,
+		ControlGridMinWidth = 560,
+		SectionPadding = 10,
+		PagePadding = 16,
+		HeaderHeight = 46,
+		SidebarWidth = 162,
+		RailWidth = 50,
+		NavItemHeight = 36,
+		FontCaption = 11,
+		FontSmall = 11,
+		FontBody = 13,
+		FontTitle = 14,
+		FontHeading = 16,
+		FontDisplay = 18,
+		IconSm = 14,
+		IconMd = 16,
+		CornerSm = 5,
+		CornerMd = 6,
+		CornerLg = 8,
+		Stroke = 1,
+		SliderTrack = 4,
+		SliderKnob = 10,
+	},
+	Compact = {
+		ControlHeight = 38,
+		ControlPadding = 10,
+		ControlRadius = 4,
+		FieldHeight = 30,
+		FieldRadius = 4,
+		RowGap = 0,
+		SectionGap = 10,
+		ColumnGap = 10,
+		TwoColumnMinWidth = 520,
+		MinSectionWidth = 256,
+		ControlStackBreakpoint = 270,
+		ControlGridMinWidth = 520,
+		SectionPadding = 8,
+		PagePadding = 14,
+		HeaderHeight = 44,
+		SidebarWidth = 152,
+		RailWidth = 48,
+		NavItemHeight = 34,
+		FontCaption = 10,
+		FontSmall = 11,
+		FontBody = 13,
+		FontTitle = 13,
+		FontHeading = 15,
+		FontDisplay = 17,
+		IconSm = 13,
+		IconMd = 15,
+		CornerSm = 4,
+		CornerMd = 5,
+		CornerLg = 7,
+		Stroke = 1,
+		SliderTrack = 3,
+		SliderKnob = 8,
+	},
+	Touch = {
+		ControlHeight = 48,
+		ControlPadding = 12,
+		ControlRadius = 8,
+		FieldHeight = 36,
+		FieldRadius = 6,
+		RowGap = 0,
+		SectionGap = 12,
+		ColumnGap = 12,
+		TwoColumnMinWidth = 600,
+		MinSectionWidth = 290,
+		ControlStackBreakpoint = 310,
 		ControlGridMinWidth = 600,
 		SectionPadding = 12,
-		PagePadding = 20,
-		HeaderHeight = 56,
-		SidebarWidth = 168,
-		RailWidth = 54,
-		NavItemHeight = 38,
+		PagePadding = 14,
+		HeaderHeight = 48,
+		SidebarWidth = 228,
+		RailWidth = 56,
+		NavItemHeight = 44,
 		FontCaption = 11,
 		FontSmall = 12,
 		FontBody = 14,
 		FontTitle = 15,
 		FontHeading = 18,
-		FontDisplay = 21,
-		IconSm = 14,
-		IconMd = 18,
-		CornerSm = 7,
-		CornerMd = 10,
-		CornerLg = 14,
-		Stroke = 1,
-		SliderTrack = 4,
-		SliderKnob = 12,
-	},
-	Compact = {
-		ControlHeight = 40,
-		ControlPadding = 10,
-		ControlRadius = 9,
-		FieldHeight = 31,
-		FieldRadius = 7,
-		RowGap = 0,
-		SectionGap = 10,
-		ColumnGap = 12,
-		TwoColumnMinWidth = 546,
-		MinSectionWidth = 267,
-		ControlStackBreakpoint = 282,
-		ControlGridMinWidth = 560,
-		SectionPadding = 9,
-		PagePadding = 18,
-		HeaderHeight = 50,
-		SidebarWidth = 158,
-		RailWidth = 50,
-		NavItemHeight = 35,
-		FontCaption = 10,
-		FontSmall = 11,
-		FontBody = 13,
-		FontTitle = 14,
-		FontHeading = 18,
 		FontDisplay = 20,
-		IconSm = 14,
-		IconMd = 18,
-		CornerSm = 7,
-		CornerMd = 10,
-		CornerLg = 15,
+		IconSm = 16,
+		IconMd = 19,
+		CornerSm = 6,
+		CornerMd = 8,
+		CornerLg = 10,
 		Stroke = 1,
 		SliderTrack = 4,
-		SliderKnob = 10,
-	},
-	Touch = {
-		ControlHeight = 48,
-		ControlPadding = 13,
-		ControlRadius = 11,
-		FieldHeight = 38,
-		FieldRadius = 9,
-		RowGap = 0,
-		SectionGap = 15,
-		ColumnGap = 14,
-		TwoColumnMinWidth = 626,
-		MinSectionWidth = 306,
-		ControlStackBreakpoint = 324,
-		ControlGridMinWidth = 640,
-		SectionPadding = 14,
-		PagePadding = 14,
-		HeaderHeight = 54,
-		SidebarWidth = 238,
-		RailWidth = 60,
-		NavItemHeight = 48,
-		FontCaption = 11,
-		FontSmall = 13,
-		FontBody = 15,
-		FontTitle = 16,
-		FontHeading = 20,
-		FontDisplay = 22,
-		IconSm = 17,
-		IconMd = 21,
-		CornerSm = 8,
-		CornerMd = 12,
-		CornerLg = 17,
-		Stroke = 1,
-		SliderTrack = 5,
-		SliderKnob = 16,
+		SliderKnob = 14,
 	},
 }
 
@@ -13546,285 +13555,7 @@ end
 
 __modules["runtime/RuntimeManifest"] = function()
 -- generated by build/generate.mjs; edit build/manifest.json instead.
-return {
-	["Common"] = {
-		["Id"] = "string?",
-		["Title"] = "string?",
-		["Description"] = "string?",
-		["Keywords"] = "table?",
-		["Badge"] = "string?",
-		["Disabled"] = "boolean|string?",
-		["Visible"] = "boolean?",
-		["VisibleWhen"] = "table|function?",
-		["EnabledWhen"] = "table|function?",
-		["IgnoreConfig"] = "boolean?",
-		["Order"] = "number?",
-		["Callback"] = "function?",
-		["Tooltip"] = "string|function?",
-		["ContextMenu"] = "table?",
-		["Adaptive"] = "boolean?",
-		["Icon"] = "string?",
-		["IconColor"] = "string|Color3?",
-	},
-	["Components"] = {
-		["Button"] = {
-			["Method"] = "AddButton",
-			["Options"] = {
-				["Text"] = "string?",
-				["Variant"] = "string?",
-				["Confirm"] = "string?",
-				["Risky"] = "boolean?",
-				["DoubleClick"] = "boolean?",
-				["DoubleClickWindow"] = "number?",
-				["SubButtons"] = "table?",
-				["Actions"] = "table?",
-			},
-			["Required"] = { "Title" },
-			["Stateful"] = false,
-		},
-		["Toggle"] = {
-			["Method"] = "AddToggle",
-			["Options"] = { ["Default"] = "boolean?", ["Style"] = "string?" },
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["Slider"] = {
-			["Method"] = "AddSlider",
-			["Options"] = {
-				["Min"] = "number",
-				["Max"] = "number",
-				["Default"] = "number?",
-				["Step"] = "number?",
-				["Precision"] = "number?",
-				["Rounding"] = "number?",
-				["Prefix"] = "string?",
-				["Suffix"] = "string?",
-				["Format"] = "function?",
-				["FormatDisplayValue"] = "function?",
-				["ValueInput"] = "boolean?",
-				["AllowRightClickInput"] = "boolean?",
-				["FloatingValue"] = "boolean?",
-				["Compact"] = "boolean?",
-				["HideMax"] = "boolean?",
-				["IconFrom"] = "string?",
-				["IconTo"] = "string?",
-			},
-			["Required"] = { "Title", "Min", "Max" },
-			["Stateful"] = true,
-		},
-		["Dropdown"] = {
-			["Method"] = "AddDropdown",
-			["Options"] = {
-				["Options"] = "table?",
-				["Values"] = "table?",
-				["Default"] = "any?",
-				["Multi"] = "boolean?",
-				["MultiValueMode"] = "string?",
-				["Map"] = "boolean?",
-				["ReturnMap"] = "boolean?",
-				["Searchable"] = "boolean?",
-				["AllowNone"] = "boolean?",
-				["AllowNull"] = "boolean?",
-				["Max"] = "number?",
-				["Placeholder"] = "string?",
-				["Style"] = "string?",
-				["Source"] = "any?",
-				["MaxVisibleRows"] = "number?",
-				["MaxVisibleDropdownItems"] = "number?",
-				["DragSelect"] = "boolean?",
-				["DisabledValues"] = "table?",
-				["ValueImages"] = "table?",
-				["Images"] = "table?",
-				["FormatDisplayValue"] = "function?",
-				["FormatListValue"] = "function?",
-				["FormatValue"] = "function?",
-				["FormatOption"] = "function?",
-			},
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["Input"] = {
-			["Method"] = "AddInput",
-			["Options"] = {
-				["Default"] = "string|number?",
-				["Placeholder"] = "string?",
-				["Numeric"] = "boolean?",
-				["MaxLength"] = "number?",
-				["Multiline"] = "boolean?",
-				["ClearOnFocus"] = "boolean?",
-				["ClearTextOnFocus"] = "boolean?",
-				["ClearTextOnBlur"] = "boolean?",
-				["AllowEmpty"] = "boolean?",
-				["EmptyReset"] = "string|number?",
-				["Validate"] = "function?",
-				["VerifyValue"] = "function?",
-				["Finished"] = "boolean?",
-				["CommitOn"] = "string?",
-				["Height"] = "number?",
-			},
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["Keybind"] = {
-			["Method"] = "AddKeybind",
-			["Options"] = {
-				["Default"] = "any?",
-				["Mode"] = "string?",
-				["AllowedModes"] = "table?",
-				["Blacklist"] = "table?",
-				["Blacklisted"] = "table?",
-				["Whitelist"] = "table?",
-				["Whitelisted"] = "table?",
-				["Modifiers"] = "table?",
-				["DefaultModifiers"] = "table?",
-				["ModifierWhitelist"] = "table?",
-				["WhitelistedModifiers"] = "table?",
-				["ModifierBlacklist"] = "table?",
-				["BlacklistModifiers"] = "table?",
-				["BlacklistedModifiers"] = "table?",
-				["ExactModifiers"] = "boolean?",
-				["CustomModes"] = "table?",
-				["Modes"] = "table?",
-				["AttachTo"] = "any?",
-				["SyncToggle"] = "boolean?",
-				["SyncToggleState"] = "boolean?",
-				["WaitForCallback"] = "boolean?",
-				["ChangedCallback"] = "function?",
-				["Clicked"] = "function?",
-				["NoUI"] = "boolean?",
-				["Mobile"] = "boolean?",
-				["MobileText"] = "string?",
-			},
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["ColorPicker"] = {
-			["Method"] = "AddColorPicker",
-			["Options"] = {
-				["Default"] = "Color3?",
-				["Alpha"] = "boolean?",
-				["DefaultAlpha"] = "number?",
-				["Presets"] = "table?",
-			},
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["Paragraph"] = {
-			["Method"] = "AddParagraph",
-			["Options"] = {
-				["Content"] = "string?",
-				["Variant"] = "string?",
-				["RichText"] = "boolean?",
-				["DoesWrap"] = "boolean?",
-				["Wrap"] = "boolean?",
-				["Size"] = "number?",
-			},
-			["Required"] = {},
-			["Stateful"] = false,
-		},
-		["Divider"] = {
-			["Method"] = "AddDivider",
-			["Options"] = {
-				["Text"] = "string?",
-				["Margin"] = "number?",
-				["MarginTop"] = "number?",
-				["MarginBottom"] = "number?",
-			},
-			["Required"] = {},
-			["Stateful"] = false,
-		},
-		["Status"] = {
-			["Method"] = "AddStatus",
-			["Options"] = { ["Value"] = "any?", ["Status"] = "string?", ["Pulse"] = "boolean?" },
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["Progress"] = {
-			["Method"] = "AddProgress",
-			["Options"] = {
-				["Min"] = "number?",
-				["Max"] = "number?",
-				["Default"] = "number?",
-				["Suffix"] = "string?",
-				["ShowValue"] = "boolean?",
-				["Indeterminate"] = "boolean?",
-				["Format"] = "function?",
-			},
-			["Required"] = { "Title" },
-			["Stateful"] = true,
-		},
-		["Code"] = {
-			["Method"] = "AddCode",
-			["Options"] = {
-				["Code"] = "string?",
-				["Content"] = "string?",
-				["Language"] = "string?",
-				["Height"] = "number?",
-				["Copy"] = "boolean?",
-			},
-			["Required"] = {},
-			["Stateful"] = false,
-		},
-		["Image"] = {
-			["Method"] = "AddImage",
-			["Options"] = {
-				["Image"] = "string",
-				["Height"] = "number?",
-				["Caption"] = "string?",
-				["ScaleType"] = "EnumItem?",
-				["Tint"] = "Color3?",
-				["ImageColor3"] = "Color3?",
-				["Transparency"] = "number?",
-				["ImageTransparency"] = "number?",
-				["BackgroundTransparency"] = "number?",
-				["RectOffset"] = "Vector2?",
-				["RectSize"] = "Vector2?",
-				["ImageRectOffset"] = "Vector2?",
-				["ImageRectSize"] = "Vector2?",
-			},
-			["Required"] = { "Image" },
-			["Stateful"] = false,
-		},
-		["Passthrough"] = {
-			["Method"] = "AddPassthrough",
-			["Options"] = {
-				["Instance"] = "Instance",
-				["Height"] = "number?",
-				["Fill"] = "boolean?",
-				["Clone"] = "boolean?",
-				["DestroyInstance"] = "boolean?",
-			},
-			["Required"] = { "Instance" },
-			["Stateful"] = false,
-		},
-		["Viewport"] = {
-			["Method"] = "AddViewport",
-			["Options"] = {
-				["Object"] = "Instance",
-				["Clone"] = "boolean?",
-				["DestroyObject"] = "boolean?",
-				["Camera"] = "Instance?",
-				["Interactive"] = "boolean?",
-				["AutoFocus"] = "boolean?",
-				["Height"] = "number?",
-			},
-			["Required"] = { "Object" },
-			["Stateful"] = false,
-		},
-		["Video"] = {
-			["Method"] = "AddVideo",
-			["Options"] = {
-				["Video"] = "string",
-				["Looped"] = "boolean?",
-				["Playing"] = "boolean?",
-				["Volume"] = "number?",
-				["Height"] = "number?",
-			},
-			["Required"] = { "Video" },
-			["Stateful"] = false,
-		},
-	},
-}
+return {["Common"]={["Id"]="string?",["Title"]="string?",["Description"]="string?",["Keywords"]="table?",["Badge"]="string?",["Disabled"]="boolean|string?",["Visible"]="boolean?",["VisibleWhen"]="table|function?",["EnabledWhen"]="table|function?",["IgnoreConfig"]="boolean?",["Order"]="number?",["Callback"]="function?",["Tooltip"]="string|function?",["ContextMenu"]="table?",["Adaptive"]="boolean?",["Icon"]="string?",["IconColor"]="string|Color3?"},["Components"]={["Button"]={["Method"]="AddButton",["Options"]={["Text"]="string?",["Variant"]="string?",["Confirm"]="string?",["Risky"]="boolean?",["DoubleClick"]="boolean?",["DoubleClickWindow"]="number?",["SubButtons"]="table?",["Actions"]="table?"},["Required"]={"Title"},["Stateful"]=false},["Toggle"]={["Method"]="AddToggle",["Options"]={["Default"]="boolean?",["Style"]="string?"},["Required"]={"Title"},["Stateful"]=true},["Slider"]={["Method"]="AddSlider",["Options"]={["Min"]="number",["Max"]="number",["Default"]="number?",["Step"]="number?",["Precision"]="number?",["Rounding"]="number?",["Prefix"]="string?",["Suffix"]="string?",["Format"]="function?",["FormatDisplayValue"]="function?",["ValueInput"]="boolean?",["AllowRightClickInput"]="boolean?",["FloatingValue"]="boolean?",["Compact"]="boolean?",["HideMax"]="boolean?",["IconFrom"]="string?",["IconTo"]="string?"},["Required"]={"Title","Min","Max"},["Stateful"]=true},["Dropdown"]={["Method"]="AddDropdown",["Options"]={["Options"]="table?",["Values"]="table?",["Default"]="any?",["Multi"]="boolean?",["MultiValueMode"]="string?",["Map"]="boolean?",["ReturnMap"]="boolean?",["Searchable"]="boolean?",["AllowNone"]="boolean?",["AllowNull"]="boolean?",["Max"]="number?",["Placeholder"]="string?",["Style"]="string?",["Source"]="any?",["MaxVisibleRows"]="number?",["MaxVisibleDropdownItems"]="number?",["DragSelect"]="boolean?",["DisabledValues"]="table?",["ValueImages"]="table?",["Images"]="table?",["FormatDisplayValue"]="function?",["FormatListValue"]="function?",["FormatValue"]="function?",["FormatOption"]="function?"},["Required"]={"Title"},["Stateful"]=true},["Input"]={["Method"]="AddInput",["Options"]={["Default"]="string|number?",["Placeholder"]="string?",["Numeric"]="boolean?",["MaxLength"]="number?",["Multiline"]="boolean?",["ClearOnFocus"]="boolean?",["ClearTextOnFocus"]="boolean?",["ClearTextOnBlur"]="boolean?",["AllowEmpty"]="boolean?",["EmptyReset"]="string|number?",["Validate"]="function?",["VerifyValue"]="function?",["Finished"]="boolean?",["CommitOn"]="string?",["Height"]="number?"},["Required"]={"Title"},["Stateful"]=true},["Keybind"]={["Method"]="AddKeybind",["Options"]={["Default"]="any?",["Mode"]="string?",["AllowedModes"]="table?",["Blacklist"]="table?",["Blacklisted"]="table?",["Whitelist"]="table?",["Whitelisted"]="table?",["Modifiers"]="table?",["DefaultModifiers"]="table?",["ModifierWhitelist"]="table?",["WhitelistedModifiers"]="table?",["ModifierBlacklist"]="table?",["BlacklistModifiers"]="table?",["BlacklistedModifiers"]="table?",["ExactModifiers"]="boolean?",["CustomModes"]="table?",["Modes"]="table?",["AttachTo"]="any?",["SyncToggle"]="boolean?",["SyncToggleState"]="boolean?",["WaitForCallback"]="boolean?",["ChangedCallback"]="function?",["Clicked"]="function?",["NoUI"]="boolean?",["Mobile"]="boolean?",["MobileText"]="string?",["ShowInHUD"]="boolean?"},["Required"]={"Title"},["Stateful"]=true},["ColorPicker"]={["Method"]="AddColorPicker",["Options"]={["Default"]="Color3?",["Alpha"]="boolean?",["DefaultAlpha"]="number?",["Presets"]="table?"},["Required"]={"Title"},["Stateful"]=true},["Paragraph"]={["Method"]="AddParagraph",["Options"]={["Content"]="string?",["Variant"]="string?",["RichText"]="boolean?",["DoesWrap"]="boolean?",["Wrap"]="boolean?",["Size"]="number?"},["Required"]={},["Stateful"]=false},["Divider"]={["Method"]="AddDivider",["Options"]={["Text"]="string?",["Margin"]="number?",["MarginTop"]="number?",["MarginBottom"]="number?"},["Required"]={},["Stateful"]=false},["Status"]={["Method"]="AddStatus",["Options"]={["Value"]="any?",["Status"]="string?",["Pulse"]="boolean?"},["Required"]={"Title"},["Stateful"]=true},["Progress"]={["Method"]="AddProgress",["Options"]={["Min"]="number?",["Max"]="number?",["Default"]="number?",["Suffix"]="string?",["ShowValue"]="boolean?",["Indeterminate"]="boolean?",["Format"]="function?"},["Required"]={"Title"},["Stateful"]=true},["Code"]={["Method"]="AddCode",["Options"]={["Code"]="string?",["Content"]="string?",["Language"]="string?",["Height"]="number?",["Copy"]="boolean?"},["Required"]={},["Stateful"]=false},["Image"]={["Method"]="AddImage",["Options"]={["Image"]="string",["Height"]="number?",["Caption"]="string?",["ScaleType"]="EnumItem?",["Tint"]="Color3?",["ImageColor3"]="Color3?",["Transparency"]="number?",["ImageTransparency"]="number?",["BackgroundTransparency"]="number?",["RectOffset"]="Vector2?",["RectSize"]="Vector2?",["ImageRectOffset"]="Vector2?",["ImageRectSize"]="Vector2?"},["Required"]={"Image"},["Stateful"]=false},["Passthrough"]={["Method"]="AddPassthrough",["Options"]={["Instance"]="Instance",["Height"]="number?",["Fill"]="boolean?",["Clone"]="boolean?",["DestroyInstance"]="boolean?"},["Required"]={"Instance"},["Stateful"]=false},["Viewport"]={["Method"]="AddViewport",["Options"]={["Object"]="Instance",["Clone"]="boolean?",["DestroyObject"]="boolean?",["Camera"]="Instance?",["Interactive"]="boolean?",["AutoFocus"]="boolean?",["Height"]="number?"},["Required"]={"Object"},["Stateful"]=false},["Video"]={["Method"]="AddVideo",["Options"]={["Video"]="string",["Looped"]="boolean?",["Playing"]="boolean?",["Volume"]="number?",["Height"]="number?"},["Required"]={"Video"},["Stateful"]=false}}}
 
 end
 
@@ -16041,6 +15772,7 @@ local Create = __require("runtime/Create")
 local Janitor = __require("runtime/Janitor")
 local HUD = {}
 HUD.__index = HUD
+
 local function keyText(value)
 	if type(value) ~= "table" then
 		return tostring(value or "None")
@@ -16052,6 +15784,7 @@ local function keyText(value)
 	table.insert(parts, tostring(value.Key or "None"))
 	return table.concat(parts, " + ")
 end
+
 function HUD.new(window)
 	local self = setmetatable({
 		_window = window,
@@ -16060,16 +15793,16 @@ function HUD.new(window)
 		_keybind = nil,
 		_watermarkSpec = nil,
 		_keybindEnabled = false,
+		_keybindSide = "Right",
 		_alive = true,
+		_rows = {},
+		_bindings = {},
 	}, HUD)
-	self._janitor:Add(task.spawn(function()
-		while self._alive do
-			self:_refresh()
-			task.wait(0.25)
-		end
-	end))
 	return self
 end
+
+-- ===== Watermark =========================================================
+
 function HUD:_ensureWatermark()
 	if self._watermark then
 		return
@@ -16085,18 +15818,19 @@ function HUD:_ensureWatermark()
 		Text = "",
 		Parent = w.Layers.Toast,
 	})
-	Create.New("UICorner", { CornerRadius = UDim.new(0, 7), Parent = self._watermark })
+	Create.New("UICorner", { CornerRadius = UDim.new(0, 6), Parent = self._watermark })
 	Create.New("UIPadding", {
-		PaddingTop = UDim.new(0, 6),
-		PaddingBottom = UDim.new(0, 6),
-		PaddingLeft = UDim.new(0, 9),
-		PaddingRight = UDim.new(0, 9),
+		PaddingTop = UDim.new(0, 5),
+		PaddingBottom = UDim.new(0, 5),
+		PaddingLeft = UDim.new(0, 8),
+		PaddingRight = UDim.new(0, 8),
 		Parent = self._watermark,
 	})
 	local s = Create.New("UIStroke", { Thickness = 1, Transparency = 0.5, Parent = self._watermark })
 	w:_bind(self._watermark, { BackgroundColor3 = "SurfaceRaised", TextColor3 = "TextSecondary" })
 	w:_bind(s, { Color = "Border" })
 end
+
 function HUD:SetWatermark(spec)
 	if spec == false or spec == nil then
 		if self._watermark then
@@ -16108,99 +15842,384 @@ function HUD:SetWatermark(spec)
 	end
 	self._watermarkSpec = spec
 	self:_ensureWatermark()
-	self:_refresh()
+	self:_refreshWatermark()
 	return self
 end
-function HUD:_ensureKeybind()
-	if self._keybind then
-		return
-	end
-	local w = self._window
-	self._keybind = Create.New("Frame", {
-		Size = UDim2.fromOffset(230, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		Position = UDim2.new(0, 12, 1, -12),
-		AnchorPoint = Vector2.new(0, 1),
-		BackgroundTransparency = 0,
-		BorderSizePixel = 0,
-		Parent = w.Layers.Toast,
-	})
-	Create.New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = self._keybind })
-	Create.New("UIPadding", {
-		PaddingTop = UDim.new(0, 8),
-		PaddingBottom = UDim.new(0, 8),
-		PaddingLeft = UDim.new(0, 10),
-		PaddingRight = UDim.new(0, 10),
-		Parent = self._keybind,
-	})
-	self._keyLayout = Create.List(4)
-	self._keyLayout.Parent = self._keybind
-	local s = Create.New("UIStroke", { Thickness = 1, Transparency = 0.5, Parent = self._keybind })
-	w:_bind(self._keybind, { BackgroundColor3 = "SurfaceRaised" })
-	w:_bind(s, { Color = "Border" })
-end
-function HUD:SetKeybindHUD(enabled)
-	self._keybindEnabled = enabled == true
-	if self._keybindEnabled then
-		self:_ensureKeybind()
-	elseif self._keybind then
-		self._keybind:Destroy()
-		self._keybind = nil
-	end
-	return self
-end
-function HUD:_refresh()
-	local w = self._window
+
+function HUD:_refreshWatermark()
 	if self._watermark and self._watermarkSpec then
 		local text = if type(self._watermarkSpec) == "function"
 			then select(2, pcall(self._watermarkSpec))
 			else self._watermarkSpec
 		self._watermark.Text = tostring(text or "")
 	end
+end
+
+-- ===== Keybind HUD =======================================================
+
+function HUD:_ensureKeybind()
+	if self._keybind then
+		return
+	end
+	local w = self._window
+	local _, safeSize = w.Device:SafeArea()
+	local side = self._keybindSide
+
+	self._keybind = Create.New("Frame", {
+		Name = "KeybindHUD",
+		Size = UDim2.fromOffset(200, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		Position = if side == "Left"
+			then UDim2.new(0, 12, 0.5, 0)
+			else UDim2.new(1, -212, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
+		Parent = w.Layers.Toast,
+	})
+	Create.New("UICorner", { CornerRadius = UDim.new(0, 6), Parent = self._keybind })
+	Create.New("UIPadding", {
+		PaddingTop = UDim.new(0, 6),
+		PaddingBottom = UDim.new(0, 6),
+		PaddingLeft = UDim.new(0, 8),
+		PaddingRight = UDim.new(0, 8),
+		Parent = self._keybind,
+	})
+	self._keyLayout = Create.List(2)
+	self._keyLayout.Parent = self._keybind
+	local s = Create.New("UIStroke", { Thickness = 1, Transparency = 0.5, Parent = self._keybind })
+	w:_bind(self._keybind, { BackgroundColor3 = "SurfaceRaised" })
+	w:_bind(s, { Color = "Border" })
+
+	-- Make draggable
+	local dragJanitor = w.Input:AttachDrag(self._keybind, function(delta)
+		self._keybind.Position = UDim2.new(
+			self._keybind.Position.X.Scale,
+			self._keybind.Position.X.Offset + delta.X,
+			self._keybind.Position.Y.Scale,
+			self._keybind.Position.Y.Offset + delta.Y
+		)
+	end, function()
+		return self._keybind ~= nil and self._keybind.Parent ~= nil
+	end)
+	self._janitor:Add(dragJanitor)
+
+	-- Clamp to SafeArea on size change
+	self._janitor:Add(self._keybind:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		self:_clampToSafeArea()
+	end))
+	self._janitor:Add(self._keybind:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+		self:_clampToSafeArea()
+	end))
+end
+
+function HUD:_clampToSafeArea()
+	if not self._keybind or not self._keybind.Parent then
+		return
+	end
+	local w = self._window
+	local pos, safeSize = w.Device:SafeArea()
+	local absPos = self._keybind.AbsolutePosition
+	local absSize = self._keybind.AbsoluteSize
+	local clampedX = math.clamp(absPos.X, pos.X, pos.X + safeSize.X - absSize.X)
+	local clampedY = math.clamp(absPos.Y, pos.Y, pos.Y + safeSize.Y - absSize.Y)
+	if clampedX ~= absPos.X or clampedY ~= absPos.Y then
+		self._keybind.Position = UDim2.fromOffset(clampedX, clampedY)
+		self._keybind.AnchorPoint = Vector2.new(0, 0)
+	end
+end
+
+function HUD:_destroyKeybind()
+	if self._keybind then
+		self._keybind:Destroy()
+		self._keybind = nil
+	end
+	self._rows = {}
+end
+
+function HUD:SetKeybindHUD(enabled)
+	if enabled == true or enabled == "Auto" then
+		self._keybindEnabled = true
+	elseif enabled == false or enabled == nil then
+		self._keybindEnabled = false
+		self:_destroyKeybind()
+	end
 	if self._keybindEnabled then
-		self:_ensureKeybind()
-		for _, child in self._keybind:GetChildren() do
-			if child:IsA("GuiObject") then
-				child:Destroy()
-			end
+		self:_rebuildKeybinds()
+	end
+	return self
+end
+
+function HUD:SetKeybindHUDSide(side)
+	if side ~= "Left" and side ~= "Right" then
+		error("[BobloUI] KeybindHUDSide must be 'Left' or 'Right'.", 2)
+	end
+	self._keybindSide = side
+	if self._keybind then
+		self._keybind.AnchorPoint = Vector2.new(0, 0.5)
+		self._keybind.Position = if side == "Left"
+			then UDim2.new(0, 12, 0.5, 0)
+			else UDim2.new(1, -212, 0.5, 0)
+	end
+	return self
+end
+
+-- ===== Event-driven keybind tracking =====================================
+
+function HUD:_startTracking()
+	if self._trackingStarted then
+		return
+	end
+	self._trackingStarted = true
+	local w = self._window
+
+	-- Listen for new keybinds
+	self._janitor:Add(w.Registry.Added:Connect(function(entry)
+		if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
+			self:_trackKeybind(entry.Handle, entry.Id)
 		end
-		for _, entry in w.Registry:Entries() do
-			local h = entry.Handle
-			if entry.Type == "Keybind" and h and not h._destroyed then
-				local v = h:GetValue()
-				local mobileAction = w.Device.Class == "Phone" and h.Mobile ~= false
-				local row = Create.New(if mobileAction then "TextButton" else "TextLabel", {
-					Size = UDim2.new(1, 0, 0, 20),
-					BackgroundTransparency = if mobileAction then 0.82 else 1,
-					BorderSizePixel = 0,
-					AutoButtonColor = if mobileAction then false else nil,
-					Font = w.Fonts.Regular,
-					TextSize = w.Tokens:Get("FontSmall"),
-					TextXAlignment = Enum.TextXAlignment.Left,
-					Text = `{h.MobileText or h.Title or entry.Id}   [{keyText(v)}]`,
-					Parent = self._keybind,
-				})
-				w:_bind(row, {
-					TextColor3 = h:IsActive() and "Accent" or "TextSecondary",
-					BackgroundColor3 = "ControlHover",
-				})
-				if mobileAction then
-					Create.New("UICorner", { CornerRadius = UDim.new(0, 6), Parent = row })
-					Create.New("UIPadding", {
-						PaddingLeft = UDim.new(0, 6),
-						PaddingRight = UDim.new(0, 6),
-						Parent = row,
-					})
-					row.MouseButton1Click:Connect(function()
-						h:Trigger()
-					end)
-				end
-			end
+	end))
+
+	-- Listen for removed keybinds
+	self._janitor:Add(w.Registry.Removed:Connect(function(entry)
+		if entry.Type == "Keybind" then
+			self:_untrackKeybind(entry.Id)
+		end
+	end))
+
+	-- Track existing keybinds
+	for _, entry in w.Registry:Entries() do
+		if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
+			self:_trackKeybind(entry.Handle, entry.Id)
 		end
 	end
 end
+
+function HUD:_trackKeybind(handle, id)
+	if self._bindings[id] then
+		return
+	end
+	local w = self._window
+	local janitor = Janitor.new(`HUD_keybind[{id}]`)
+	self._bindings[id] = { Handle = handle, Janitor = janitor }
+
+	-- Subscribe to value changes
+	janitor:Add(handle.Changed:Connect(function()
+		if self._keybindEnabled then
+			self:_updateRow(id)
+		end
+	end))
+
+	-- Build or update row
+	if self._keybindEnabled then
+		self:_ensureRow(handle, id)
+		self:_updateRow(id)
+		self:_updateContainerVisibility()
+	end
+end
+
+function HUD:_untrackKeybind(id)
+	local binding = self._bindings[id]
+	if binding then
+		binding.Janitor:Destroy()
+		self._bindings[id] = nil
+	end
+	local row = self._rows[id]
+	if row then
+		row:Destroy()
+		self._rows[id] = nil
+	end
+	self:_updateContainerVisibility()
+end
+
+function HUD:_shouldShowKeybind(handle)
+	if not handle or handle._destroyed then
+		return false
+	end
+	if handle.NoUI then
+		return false
+	end
+	if handle.ShowInHUD == false then
+		return false
+	end
+	local v = handle:GetValue()
+	if type(v) == "table" and v.Key == "None" then
+		return false
+	end
+	if type(v) == "string" and v == "None" then
+		return false
+	end
+	return true
+end
+
+function HUD:_ensureRow(handle, id)
+	if self._rows[id] then
+		return
+	end
+	local w = self._window
+	local isMobile = w.Device.Class == "Phone" and handle.Mobile ~= false
+
+	local row = Create.New(if isMobile then "TextButton" else "TextLabel", {
+		Name = `Row_{id}`,
+		Size = UDim2.new(1, 0, 0, 22),
+		BackgroundTransparency = if isMobile then 0.88 else 1,
+		BorderSizePixel = 0,
+		AutoButtonColor = if isMobile then false else nil,
+		Font = w.Fonts.Regular,
+		TextSize = w.Tokens:Get("FontSmall"),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self._keybind,
+	})
+	w:_bind(row, { TextColor3 = "TextSecondary", BackgroundColor3 = "ControlHover" })
+
+	local keyLabel = Create.New("TextLabel", {
+		Name = "KeyPill",
+		AutomaticSize = Enum.AutomaticSize.X,
+		Size = UDim2.new(0, 0, 0, 18),
+		Position = UDim2.new(1, 0, 0.5, 0),
+		AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
+		Font = w.Fonts.Medium,
+		TextSize = w.Tokens:Get("FontCaption"),
+		TextXAlignment = Enum.TextXAlignment.Center,
+		Parent = row,
+	})
+	Create.New("UICorner", { CornerRadius = UDim.new(0, 3), Parent = keyLabel })
+	Create.New("UIPadding", {
+		PaddingLeft = UDim.new(0, 5),
+		PaddingRight = UDim.new(0, 5),
+		Parent = keyLabel,
+	})
+	w:_bind(keyLabel, { BackgroundColor3 = "SurfaceInset", TextColor3 = "TextTertiary" })
+	local keyStroke = Create.New("UIStroke", { Thickness = 1, Transparency = 0.5, Parent = keyLabel })
+	w:_bind(keyStroke, { Color = "BorderSubtle" })
+
+	if isMobile then
+		Create.New("UICorner", { CornerRadius = UDim.new(0, 5), Parent = row })
+		Create.New("UIPadding", {
+			PaddingLeft = UDim.new(0, 6),
+			PaddingRight = UDim.new(0, 6),
+			Parent = row,
+		})
+		row.MouseButton1Click:Connect(function()
+			handle:Trigger()
+		end)
+	end
+
+	self._rows[id] = row
+	self._janitor:Add(row)
+
+	-- Fit width to content
+	local titleWidth = handle.MobileText or handle.Title or id
+	local estimatedWidth = #tostring(titleWidth) * 7 + 60
+	self._keybind.Size = UDim2.fromOffset(math.max(200, estimatedWidth), 0)
+end
+
+function HUD:_updateRow(id)
+	local row = self._rows[id]
+	local binding = self._bindings[id]
+	if not row or not binding then
+		return
+	end
+	local handle = binding.Handle
+	local w = self._window
+
+	if not self:_shouldShowKeybind(handle) then
+		row.Visible = false
+		return
+	end
+	row.Visible = true
+
+	local v = handle:GetValue()
+	local active = handle:IsActive()
+	local title = handle.MobileText or handle.Title or id
+	local keyStr = keyText(v)
+
+	-- Title left, key pill right
+	row.Text = `  {title}`
+	local keyLabel = row:FindFirstChild("KeyPill")
+	if keyLabel then
+		keyLabel.Text = `[  {keyStr}  ]`
+		w:_bind(keyLabel, {
+			BackgroundColor3 = if active then "AccentMuted" else "SurfaceInset",
+			TextColor3 = if active then "Accent" else "TextTertiary",
+		})
+	end
+
+	-- Active accent on title
+	w:_bind(row, {
+		TextColor3 = if active then "Accent" else "TextSecondary",
+	})
+end
+
+function HUD:_rebuildKeybinds()
+	self:_startTracking()
+	self:_updateContainerVisibility()
+end
+
+function HUD:_updateContainerVisibility()
+	if not self._keybindEnabled then
+		return
+	end
+	local w = self._window
+
+	-- Count visible keybinds
+	local visibleCount = 0
+	for _, entry in w.Registry:Entries() do
+		if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
+			if self:_shouldShowKeybind(entry.Handle) then
+				visibleCount += 1
+			end
+		end
+	end
+
+	if visibleCount == 0 then
+		self:_destroyKeybind()
+		return
+	end
+
+	self:_ensureKeybind()
+
+	-- Update existing rows and create missing ones
+	for _, entry in w.Registry:Entries() do
+		if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
+			if not self._bindings[entry.Id] then
+				self:_trackKeybind(entry.Handle, entry.Id)
+			end
+			if self._rows[entry.Id] then
+				self:_updateRow(entry.Id)
+			end
+		end
+	end
+
+	-- Remove stale rows
+	for id, row in self._rows do
+		local binding = self._bindings[id]
+		if not binding or not binding.Handle or binding.Handle._destroyed then
+			row:Destroy()
+			self._rows[id] = nil
+		elseif not self:_shouldShowKeybind(binding.Handle) then
+			row.Visible = false
+		end
+	end
+end
+
+-- ===== Public API ========================================================
+
+function HUD:RefreshKeybindHUD()
+	if self._keybindEnabled then
+		self:_updateContainerVisibility()
+	end
+	return self
+end
+
 function HUD:Destroy()
 	self._alive = false
+	for id, binding in self._bindings do
+		binding.Janitor:Destroy()
+	end
+	self._bindings = {}
 	self._janitor:Destroy()
 	if self._watermark then
 		self._watermark:Destroy()
@@ -16209,6 +16228,7 @@ function HUD:Destroy()
 		self._keybind:Destroy()
 	end
 end
+
 return HUD
 
 end
@@ -20592,7 +20612,7 @@ function Section.new(tab, options)
 	end))
 	self._janitor:Add(self._window.Theme.Changed:Connect(function()
 		if self._sectionIcon then
-			Icon.setColor(self._sectionIcon, self._window.Theme:Get("Accent"))
+			Icon.setColor(self._sectionIcon, self._window.Theme:Get("TextSecondary"))
 		end
 	end))
 	Dependency.Bind(self, options.VisibleWhen, "visible")
@@ -20651,8 +20671,8 @@ function Section:_mount()
 		local headerClass = if self.Collapsible then "TextButton" else "Frame"
 		self._header = Create.New(headerClass, {
 			Name = "SectionHeader",
-			Size = UDim2.new(1, 0, 0, if w._minimal then 28 elseif self.Description then 52 else 42),
-			BackgroundTransparency = if w._minimal then 1 else 0.28,
+			Size = UDim2.new(1, 0, 0, if self.Description then 36 else 28),
+			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Text = headerClass == "TextButton" and "" or nil,
 			AutoButtonColor = headerClass == "TextButton" and false or nil,
@@ -20661,77 +20681,45 @@ function Section:_mount()
 		if w._minimal then
 			self._header.Visible = self.Collapsible
 		end
-		Create.New("UICorner", { CornerRadius = UDim.new(0, math.max(6, t:Get("CornerSm"))), Parent = self._header })
-		self._headerStroke = Create.New("UIStroke", {
-			Thickness = 1,
-			Transparency = 0.5,
-			LineJoinMode = Enum.LineJoinMode.Round,
-			Parent = self._header,
-		})
-		w:_bind(self._header, { BackgroundColor3 = "SurfaceRaised" })
-		w:_bind(self._headerStroke, { Color = "BorderSubtle" })
-		if w._minimal then
-			self._headerStroke.Enabled = false
+		local iconOffset = 0
+		if self.Icon then
+			self._sectionIcon = Icon.new(w, self.Icon, {
+				Size = UDim2.fromOffset(t:Get("IconSm"), t:Get("IconSm")),
+				Position = UDim2.fromOffset(0, 0),
+				AnchorPoint = Vector2.new(0, 0),
+				Parent = self._header,
+			})
+			Icon.setColor(self._sectionIcon, w.Theme:Get("TextSecondary"))
+			iconOffset = t:Get("IconSm") + 6
+			if w._minimal then
+				self._sectionIcon.Visible = false
+				iconOffset = 0
+			end
 		end
-		self._headerAccent = Create.New("Frame", {
-			Name = "AccentRail",
-			Size = UDim2.fromOffset(3, 18),
-			Position = UDim2.new(0, 0, 0.5, 0),
-			AnchorPoint = Vector2.new(0, 0.5),
-			BorderSizePixel = 0,
-			Parent = self._header,
-		})
-		Create.New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._headerAccent })
-		w:_bind(self._headerAccent, { BackgroundColor3 = "Accent" })
-		if w._minimal then
-			self._headerAccent.Visible = false
-		end
-		self._sectionIconHost = Create.New("Frame", {
-			Name = "IconTile",
-			Size = UDim2.fromOffset(28, 28),
-			Position = UDim2.new(0, 8, 0.5, 0),
-			AnchorPoint = Vector2.new(0, 0.5),
-			BorderSizePixel = 0,
-			Parent = self._header,
-		})
-		Create.New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = self._sectionIconHost })
-		local iconStroke =
-			Create.New("UIStroke", { Thickness = 1, Transparency = 0.62, Parent = self._sectionIconHost })
-		w:_bind(self._sectionIconHost, { BackgroundColor3 = "AccentSoft" })
-		w:_bind(iconStroke, { Color = "AccentBorder" })
-		self._sectionIcon = Icon.new(w, self.Icon, {
-			Size = UDim2.fromOffset(15, 15),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = self._sectionIconHost,
-		})
-		Icon.setColor(self._sectionIcon, w.Theme:Get("Accent"))
-		if w._minimal then
-			self._sectionIconHost.Visible = false
-		end
+		local chevronOffset = if self.Collapsible then 24 else 0
 		self._title = Create.New("TextLabel", {
-			Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, if self.Description then 20 else 42),
-			Position = UDim2.fromOffset(44, if self.Description then 5 else 0),
+			Size = UDim2.new(1, -iconOffset - chevronOffset, 1, 0),
+			Position = UDim2.fromOffset(iconOffset, 0),
 			BackgroundTransparency = 1,
 			Font = w.Fonts.Medium,
-			TextSize = t:Get("FontTitle"),
+			TextSize = t:Get("FontBody"),
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Text = w.Locale:Resolve(self.Title),
 			Parent = self._header,
 		})
-		w:_bind(self._title, { TextColor3 = "Text" })
+		w:_bind(self._title, { TextColor3 = "TextSecondary" })
 		if w._minimal then
-			self._title.Position = UDim2.fromOffset(4, 0)
-			self._title.Size = UDim2.new(1, if self.Collapsible then -38 else -4, 1, 0)
+			self._title.Size = UDim2.new(1, if self.Collapsible then -28 else 0, 1, 0)
+			self._title.Position = UDim2.fromOffset(0, 0)
 			self._title.TextSize = t:Get("FontSmall")
 		end
 		if self.Description then
 			self._desc = Create.New("TextLabel", {
-				Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, 16),
-				Position = UDim2.fromOffset(44, 27),
+				Size = UDim2.new(1, -iconOffset - chevronOffset, 0, 14),
+				Position = UDim2.fromOffset(iconOffset, 22),
 				BackgroundTransparency = 1,
 				Font = w.Fonts.Regular,
-				TextSize = t:Get("FontSmall"),
+				TextSize = t:Get("FontCaption"),
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				Text = w.Locale:Resolve(self.Description),
@@ -20743,31 +20731,19 @@ function Section:_mount()
 			end
 		end
 		if self.Collapsible then
-			self._chevronBack = Create.New("Frame", {
-				Name = "ChevronTile",
-				Size = UDim2.fromOffset(26, 26),
-				Position = UDim2.new(1, -7, 0.5, 0),
+			self._chevron = Icon.new(w, "chevron_down", {
+				Size = UDim2.fromOffset(14, 14),
+				Position = UDim2.new(1, -4, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 0.32,
 				Parent = self._header,
 			})
-			Create.New("UICorner", { CornerRadius = UDim.new(0, 7), Parent = self._chevronBack })
-			w:_bind(self._chevronBack, { BackgroundColor3 = "ControlHover" })
-			self._chevron = Icon.new(w, "chevron_down", {
-				Size = UDim2.fromOffset(15, 15),
-				Position = UDim2.fromScale(0.5, 0.5),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Parent = self._chevronBack,
-			})
+			Icon.setColor(self._chevron, w.Theme:Get("TextTertiary"))
 			self._chevron.Rotation = if self.Collapsed then -90 else 0
 			self._janitor:Add(self._header.MouseEnter:Connect(function()
-				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 0.12 })
-				w.Motion:Tween(self._headerStroke, "Fast", { Transparency = 0.46 })
+				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 0.88 })
 			end))
 			self._janitor:Add(self._header.MouseLeave:Connect(function()
-				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 0.28 })
-				w.Motion:Tween(self._headerStroke, "Fast", { Transparency = 0.7 })
+				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 1 })
 			end))
 			self._janitor:Add(self._header.MouseButton1Click:Connect(function()
 				self:SetCollapsed(not self.Collapsed)
@@ -20962,13 +20938,13 @@ function Section:_applyTokens()
 	self:_updateContentLayout()
 	self:_updateAdaptiveControls(true)
 	if self._title then
-		self._title.TextSize = t:Get(if self._window._minimal then "FontSmall" else "FontTitle")
+		self._title.TextSize = t:Get(if self._window._minimal then "FontSmall" else "FontBody")
 	end
 	if self._desc then
-		self._desc.TextSize = t:Get("FontSmall")
+		self._desc.TextSize = t:Get("FontCaption")
 	end
 	if self._header then
-		self._header.Size = UDim2.new(1, 0, 0, if self._window._minimal then 28 elseif self.Description then 52 else 42)
+		self._header.Size = UDim2.new(1, 0, 0, if self.Description then 36 else 28)
 	end
 end
 function Section:_refreshSeparators()
@@ -21118,14 +21094,21 @@ function Section:SetIcon(icon)
 		self._sectionIcon:Destroy()
 		self._sectionIcon = nil
 	end
-	if self._sectionIconHost then
+	if self._header and icon then
+		local t = self._window.Tokens
+		local iconOffset = t:Get("IconSm") + 6
 		self._sectionIcon = Icon.new(self._window, self.Icon, {
-			Size = UDim2.fromOffset(15, 15),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = self._sectionIconHost,
+			Size = UDim2.fromOffset(t:Get("IconSm"), t:Get("IconSm")),
+			Position = UDim2.fromOffset(0, 0),
+			AnchorPoint = Vector2.new(0, 0),
+			Parent = self._header,
 		})
-		Icon.setColor(self._sectionIcon, self._window.Theme:Get("Accent"))
+		Icon.setColor(self._sectionIcon, self._window.Theme:Get("TextSecondary"))
+		if self._title then
+			self._title.Position = UDim2.fromOffset(iconOffset, 0)
+			local chevronOffset = if self.Collapsible then 24 else 0
+			self._title.Size = UDim2.new(1, -iconOffset - chevronOffset, 1, 0)
+		end
 	end
 	return self
 end
@@ -21297,36 +21280,19 @@ function Tab.new(window, options)
 	self._indicator = indicator
 	self._janitor:Add(button)
 
-	-- A small icon tile makes every destination identifiable before its label is
-	-- read, and keeps rail mode from feeling like a row of loose glyphs.
-	local avatarBack = New("Frame", {
-		Name = "IconTile",
-		Size = UDim2.fromOffset(26, 26),
-		Position = UDim2.new(0, 6, 0.5, 0),
+	-- Plain Lucide icon, no tile.
+	local avatar = Icon.new(window, options.Icon or "star", {
+		Name = "Avatar",
+		Size = UDim2.fromOffset(tokens:Get("IconSm"), tokens:Get("IconSm")),
+		Position = UDim2.new(0, 8, 0.5, 0),
 		AnchorPoint = Vector2.new(0, 0.5),
-		BorderSizePixel = 0,
-		BackgroundTransparency = 0.82,
 		Parent = button,
 	})
-	New("UICorner", { CornerRadius = UDim.new(0, 7), Parent = avatarBack })
-	local avatarStroke = New("UIStroke", { Thickness = 1, Transparency = 0.68, Parent = avatarBack })
-	window:_bind(avatarBack, { BackgroundColor3 = "AccentSoft" })
-	window:_bind(avatarStroke, { Color = "AccentBorder" })
-
-	-- Built-in vector icons keep navigation consistent even without external assets.
-	local avatarProps = {
-		Name = "Avatar",
-		Size = UDim2.fromOffset(tokens:Get("IconMd"), tokens:Get("IconMd")),
-		Position = UDim2.fromScale(0.5, 0.5),
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Parent = avatarBack,
-	}
-	local avatar = Icon.new(window, options.Icon or "star", avatarProps)
 
 	local label = New("TextLabel", {
 		Name = "Label",
-		Size = UDim2.new(1, -48, 1, 0),
-		Position = UDim2.new(0, 40, 0, 0),
+		Size = UDim2.new(1, -36, 1, 0),
+		Position = UDim2.new(0, 30, 0, 0),
 		BackgroundTransparency = 1,
 		Font = window.Fonts.Medium,
 		TextSize = tokens:Get("FontBody"),
@@ -21340,8 +21306,6 @@ function Tab.new(window, options)
 	window:_bind(label, { TextColor3 = "TextSecondary" })
 
 	self._button = button
-	self._avatarBack = avatarBack
-	self._avatarStroke = avatarStroke
 	self._avatar = avatar
 	self._label = label
 	self._badge = nil
@@ -21394,23 +21358,23 @@ function Tab.new(window, options)
 		PaddingRight = UDim.new(0, 0),
 		Parent = self._page,
 	})
-	-- Keep a 12 px visual gap below the 34 px icon when a tab has no description.
-	-- Tabs with a description already end at y=42 inside a 54 px intro.
-	self._introHeight = if window._minimal then 0 elseif self.Description then 54 else 46
+	-- PageIntro: hidden by default in redesigned UI. Title is shown in sidebar.
+	self._introHeight = 0
 	local pagePadding = tokens:Get("PagePadding")
 	self._pageIntro = New("Frame", {
 		Name = "PageIntro",
-		Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight),
+		Size = UDim2.new(1, -(pagePadding * 2), 0, 0),
 		Position = UDim2.fromOffset(pagePadding, 0),
 		BackgroundTransparency = 1,
+		Visible = false,
 		Parent = self._page,
 	})
-	self._pageIntro.Visible = not window._minimal
 	self._pageIconBack = New("Frame", {
 		Name = "PageIconTile",
 		Size = UDim2.fromOffset(34, 34),
 		Position = UDim2.fromOffset(0, 0),
 		BorderSizePixel = 0,
+		Visible = false,
 		Parent = self._pageIntro,
 	})
 	New("UICorner", { CornerRadius = UDim.new(0, 10), Parent = self._pageIconBack })
@@ -21774,18 +21738,8 @@ function Tab:_applyNavVisual(hover: boolean)
 	self._navHover = hover == true
 	local selected = self._selected
 	self._window.Motion:Tween(self._button, "Fast", {
-		BackgroundTransparency = if selected then 0.56 elseif hover then 0.76 else 1,
+		BackgroundTransparency = if selected then 0.88 elseif hover then 0.92 else 1,
 	}, "Tabs")
-	if self._avatarBack then
-		self._window.Motion:Tween(self._avatarBack, "Fast", {
-			BackgroundTransparency = if selected then 0.4 elseif hover then 0.68 else 0.82,
-		}, "Tabs")
-	end
-	if self._avatarStroke then
-		self._window.Motion:Tween(self._avatarStroke, "Fast", {
-			Transparency = if selected then 0.22 elseif hover then 0.48 else 0.68,
-		}, "Tabs")
-	end
 end
 
 function Tab:_setSelected(selected: boolean)
@@ -21862,7 +21816,7 @@ function Tab:SetDescription(description: string?)
 		self._pageDescription:Destroy()
 		self._pageDescription = nil
 	end
-	self._introHeight = if self._window._minimal then 0 elseif description then 54 else 46
+	self._introHeight = 0
 	local pagePadding = self._window.Tokens:Get("PagePadding")
 	if self._pageIntro then
 		self._pageIntro.Size = UDim2.new(1, -(pagePadding * 2), 0, self._introHeight)
@@ -21907,7 +21861,7 @@ function Tab:SetIcon(icon)
 		Size = UDim2.fromOffset(t:Get("IconMd"), t:Get("IconMd")),
 		Position = UDim2.fromScale(0.5, 0.5),
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Parent = self._avatarBack or self._button,
+		Parent = self._button,
 	}
 	self._avatar = Icon.new(self._window, icon or "star", props)
 	if self._pageIcon then
@@ -22965,6 +22919,7 @@ function WindowChrome:_buildHeader()
 		Position = UDim2.new(0, 14, 0.5, 0),
 		AnchorPoint = Vector2.new(0, 0.5),
 		BorderSizePixel = 0,
+		Visible = false,
 		Parent = self._header,
 	})
 	New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = self._brandMark })
@@ -23011,6 +22966,7 @@ function WindowChrome:_buildHeader()
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 		Text = self.Title,
+		Visible = false,
 		Parent = self._header,
 	})
 	self:_bind(self._titleLabel, { TextColor3 = "Text" })
@@ -23025,7 +22981,7 @@ function WindowChrome:_buildHeader()
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 		Text = self.Subtitle or "",
-		Visible = self.Subtitle ~= nil,
+		Visible = false,
 		Parent = self._header,
 	})
 	self:_bind(self._subtitleLabel, { TextColor3 = "TextSecondary" })
@@ -23115,6 +23071,7 @@ function WindowChrome:_buildHeader()
 		BackgroundTransparency = 0.82,
 		AutoButtonColor = false,
 		Text = "",
+		Visible = false,
 		Parent = self._header,
 	})
 	New("UICorner", { CornerRadius = UDim.new(0, tokens:Get("CornerSm")), Parent = self._themeButton })
@@ -23195,6 +23152,7 @@ function WindowChrome:_buildFooter()
 		Size = UDim2.new(1, 0, 0, self._footerHeight),
 		Position = UDim2.new(0, 0, 1, -self._footerHeight),
 		BorderSizePixel = 0,
+		Visible = self._footerTextValue ~= nil,
 		Parent = self._root,
 	})
 	self._footerCorner = New("UICorner", {
@@ -23251,6 +23209,9 @@ end
 function WindowChrome:SetFooterText(text)
 	self._footerTextValue = if text == nil or text == false then nil else tostring(text)
 	self:_refreshFooterText()
+	if self._footer then
+		self._footer.Visible = self._footerTextValue ~= nil
+	end
 	return self
 end
 
@@ -23261,6 +23222,9 @@ end
 function WindowChrome:_refreshChromeIcons()
 	if self._brandGlyph and not self._brandGlyph:IsA("TextLabel") then
 		Icon.setColor(self._brandGlyph, self.Theme:Get("Accent"))
+	end
+	if self._sidebarBrandGlyph and not self._sidebarBrandGlyph:IsA("TextLabel") then
+		Icon.setColor(self._sidebarBrandGlyph, self.Theme:Get("Accent"))
 	end
 end
 
@@ -23736,6 +23700,12 @@ function WindowChrome:SetTitle(title: string)
 	if self._brandGlyph and self._brandGlyph:IsA("TextLabel") then
 		self._brandGlyph.Text = title:sub(1, 1):upper()
 	end
+	if self._sidebarBrandGlyph and self._sidebarBrandGlyph:IsA("TextLabel") then
+		self._sidebarBrandGlyph.Text = title:sub(1, 1):upper()
+	end
+	if self._sidebarTitle then
+		self._sidebarTitle.Text = title
+	end
 	self:_refreshHeaderTitle()
 	return self
 end
@@ -23746,27 +23716,52 @@ function WindowChrome:SetIcon(icon)
 		self._brandGlyph:Destroy()
 		self._brandGlyph = nil
 	end
-	if not self._brandMark then
-		return self
+	if self._sidebarBrandGlyph then
+		self._sidebarBrandGlyph:Destroy()
+		self._sidebarBrandGlyph = nil
 	end
 	if icon then
-		self._brandGlyph = Icon.new(self, icon, {
-			Size = UDim2.fromOffset(15, 15),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = self._brandMark,
-		})
-		Icon.setColor(self._brandGlyph, self.Theme:Get("Accent"))
+		if self._brandMark then
+			self._brandGlyph = Icon.new(self, icon, {
+				Size = UDim2.fromOffset(15, 15),
+				Position = UDim2.fromScale(0.5, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Parent = self._brandMark,
+			})
+			Icon.setColor(self._brandGlyph, self.Theme:Get("Accent"))
+		end
+		if self._sidebarBrand then
+			self._sidebarBrandGlyph = Icon.new(self, icon, {
+				Size = UDim2.fromOffset(15, 15),
+				Position = UDim2.fromScale(0.5, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Parent = self._sidebarBrand,
+			})
+			Icon.setColor(self._sidebarBrandGlyph, self.Theme:Get("Accent"))
+		end
 	else
-		self._brandGlyph = New("TextLabel", {
-			Size = UDim2.fromScale(1, 1),
-			BackgroundTransparency = 1,
-			Font = self.Fonts.Bold,
-			TextSize = 14,
-			Text = self.Title:sub(1, 1):upper(),
-			Parent = self._brandMark,
-		})
-		self:_bind(self._brandGlyph, { TextColor3 = "Accent" })
+		if self._brandMark then
+			self._brandGlyph = New("TextLabel", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Font = self.Fonts.Bold,
+				TextSize = 14,
+				Text = self.Title:sub(1, 1):upper(),
+				Parent = self._brandMark,
+			})
+			self:_bind(self._brandGlyph, { TextColor3 = "Accent" })
+		end
+		if self._sidebarBrand then
+			self._sidebarBrandGlyph = New("TextLabel", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Font = self.Fonts.Bold,
+				TextSize = 14,
+				Text = self.Title:sub(1, 1):upper(),
+				Parent = self._sidebarBrand,
+			})
+			self:_bind(self._sidebarBrandGlyph, { TextColor3 = "Accent" })
+		end
 	end
 	self:_refreshChromeIcons()
 	return self
@@ -23775,7 +23770,11 @@ end
 function WindowChrome:SetSubtitle(text: string?)
 	self.Subtitle = text
 	self._subtitleLabel.Text = text or ""
-	self._subtitleLabel.Visible = text ~= nil and self._layout ~= "Drawer" and not self._minimal
+	self._subtitleLabel.Visible = false
+	if self._sidebarSubtitle then
+		self._sidebarSubtitle.Text = text or ""
+		self._sidebarSubtitle.Visible = text ~= nil and not self._minimal
+	end
 	self:_applyTokens()
 	return self
 end
@@ -23789,6 +23788,7 @@ __modules["shell/WindowLayout"] = function()
 -- Window geometry, responsive layout, drawer, drag, and resize behavior.
 
 local Create = __require("runtime/Create")
+local Icon = __require("primitives/Icon")
 
 local New = Create.New
 local WindowLayout = {}
@@ -23860,12 +23860,109 @@ function WindowLayout:_buildBody()
 		Parent = self._navPanel,
 	})
 	New("UIPadding", {
-		PaddingTop = UDim.new(0, 12),
+		PaddingTop = UDim.new(0, 4),
 		PaddingLeft = UDim.new(0, 8),
 		PaddingRight = UDim.new(0, 8),
 		Parent = self._navList,
 	})
-	Create.List(4).Parent = self._navList
+	Create.List(2).Parent = self._navList
+
+	-- Sidebar header: brand mark + title + subtitle
+	local sidebarHeader = New("Frame", {
+		Name = "SidebarHeader",
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		LayoutOrder = -1000,
+		Parent = self._navList,
+	})
+	local sidebarHeaderLayout = Create.List(2)
+	sidebarHeaderLayout.Parent = sidebarHeader
+
+	-- Brand mark in sidebar
+	self._sidebarBrand = New("Frame", {
+		Name = "BrandMark",
+		Size = UDim2.fromOffset(28, 28),
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
+		Parent = sidebarHeader,
+	})
+	New("UICorner", { CornerRadius = UDim.new(0, tokens:Get("CornerSm")), Parent = self._sidebarBrand })
+	local brandStroke = New("UIStroke", { Thickness = 1, Transparency = 0.46, Parent = self._sidebarBrand })
+	self:_bind(self._sidebarBrand, { BackgroundColor3 = "AccentSoft" })
+	self:_bind(brandStroke, { Color = "AccentBorder" })
+	self._sidebarBrandDot = New("Frame", {
+		Name = "StatusDot",
+		Size = UDim2.fromOffset(5, 5),
+		Position = UDim2.new(1, -1, 0, 1),
+		AnchorPoint = Vector2.new(1, 0),
+		BorderSizePixel = 0,
+		Parent = self._sidebarBrand,
+	})
+	New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._sidebarBrandDot })
+	self:_bind(self._sidebarBrandDot, { BackgroundColor3 = "Accent" })
+	if self.Icon then
+		self._sidebarBrandGlyph = Icon.new(self, self.Icon, {
+			Size = UDim2.fromOffset(15, 15),
+			Position = UDim2.fromScale(0.5, 0.5),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Parent = self._sidebarBrand,
+		})
+		Icon.setColor(self._sidebarBrandGlyph, self.Theme:Get("Accent"))
+	else
+		self._sidebarBrandGlyph = New("TextLabel", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Font = self.Fonts.Bold,
+			TextSize = 14,
+			Text = self.Title:sub(1, 1):upper(),
+			Parent = self._sidebarBrand,
+		})
+		self:_bind(self._sidebarBrandGlyph, { TextColor3 = "Accent" })
+	end
+
+	-- Title in sidebar
+	self._sidebarTitle = New("TextLabel", {
+		Name = "SidebarTitle",
+		Size = UDim2.new(1, -36, 0, 18),
+		Position = UDim2.fromOffset(0, 2),
+		BackgroundTransparency = 1,
+		Font = self.Fonts.Bold,
+		TextSize = tokens:Get("FontBody"),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Text = self.Title,
+		Parent = sidebarHeader,
+	})
+	self:_bind(self._sidebarTitle, { TextColor3 = "Text" })
+
+	-- Subtitle in sidebar
+	self._sidebarSubtitle = New("TextLabel", {
+		Name = "SidebarSubtitle",
+		Size = UDim2.new(1, -36, 0, 14),
+		Position = UDim2.fromOffset(0, 20),
+		BackgroundTransparency = 1,
+		Font = self.Fonts.Regular,
+		TextSize = tokens:Get("FontCaption"),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Text = self.Subtitle or "",
+		Visible = self.Subtitle ~= nil and not self._minimal,
+		Parent = sidebarHeader,
+	})
+	self:_bind(self._sidebarSubtitle, { TextColor3 = "TextTertiary" })
+
+	-- Divider after sidebar header
+	local sidebarDivider = New("Frame", {
+		Name = "SidebarDivider",
+		Size = UDim2.new(1, 0, 0, 1),
+		BorderSizePixel = 0,
+		LayoutOrder = -999,
+		Parent = self._navList,
+	})
+	sidebarDivider.BackgroundTransparency = 0.5
+	self:_bind(sidebarDivider, { BackgroundColor3 = "BorderSubtle" })
 
 	self._content = New("Frame", {
 		Name = "Content",
@@ -24049,9 +24146,15 @@ function WindowLayout:_applyLayout(layout: string, initial: boolean?)
 		if tab._badge then
 			tab._badge.Visible = not railMode and not self._sidebarHidden
 		end
-		if tab._avatarBack then
-			tab._avatarBack.Position = if railMode then UDim2.fromScale(0.5, 0.5) else UDim2.new(0, 6, 0.5, 0)
-			tab._avatarBack.AnchorPoint = if railMode then Vector2.new(0.5, 0.5) else Vector2.new(0, 0.5)
+		if tab._avatar then
+			if railMode then
+				tab._avatar.Position = UDim2.fromScale(0.5, 0.5)
+				tab._avatar.AnchorPoint = Vector2.new(0.5, 0.5)
+			else
+				local t = self.Tokens
+				tab._avatar.Position = UDim2.new(0, 8, 0.5, 0)
+				tab._avatar.AnchorPoint = Vector2.new(0, 0.5)
+			end
 		end
 	end
 
@@ -24481,32 +24584,32 @@ __modules["themes/Dark"] = function()
 --!nonstrict
 local hex = Color3.fromHex
 return {
-	Canvas = hex("#070A0D"),
-	Background = hex("#070A0D"),
-	Sidebar = hex("#090D11"),
-	Surface = hex("#0E141A"),
-	SurfaceRaised = hex("#121A21"),
-	SurfaceInset = hex("#090F14"),
-	SurfaceSecondary = hex("#151D25"),
-	SurfaceHover = hex("#18222C"),
-	SurfaceActive = hex("#1D2934"),
-	Control = hex("#10171E"),
-	ControlHover = hex("#18222B"),
-	ControlPressed = hex("#202C37"),
-	ControlInset = hex("#0A1016"),
-	BorderSubtle = hex("#202A34"),
-	Border = hex("#2C3946"),
-	BorderStrong = hex("#3B4B5B"),
-	Text = hex("#F4F6F8"),
-	TextSecondary = hex("#B3BDC9"),
-	TextTertiary = hex("#7D8997"),
-	TextDisabled = hex("#4E5965"),
-	Accent = hex("#8172F2"),
-	Success = hex("#55D89A"),
-	Warning = hex("#F2B84B"),
-	Error = hex("#F06469"),
-	Info = hex("#58B9FF"),
-	Scrim = hex("#050608"),
+	Canvas = hex("#0E0E10"),
+	Background = hex("#0E0E10"),
+	Sidebar = hex("#121214"),
+	Surface = hex("#161618"),
+	SurfaceRaised = hex("#1C1C1E"),
+	SurfaceInset = hex("#101012"),
+	SurfaceSecondary = hex("#1A1A1E"),
+	SurfaceHover = hex("#222226"),
+	SurfaceActive = hex("#2A2A2E"),
+	Control = hex("#18181B"),
+	ControlHover = hex("#222226"),
+	ControlPressed = hex("#2C2C30"),
+	ControlInset = hex("#101012"),
+	BorderSubtle = hex("#2A2A2E"),
+	Border = hex("#363638"),
+	BorderStrong = hex("#464648"),
+	Text = hex("#EEEEF0"),
+	TextSecondary = hex("#A0A0A6"),
+	TextTertiary = hex("#6E6E74"),
+	TextDisabled = hex("#484848"),
+	Accent = hex("#7C6CF2"),
+	Success = hex("#3DD68C"),
+	Warning = hex("#E8B644"),
+	Error = hex("#E85D5F"),
+	Info = hex("#5AAAE8"),
+	Scrim = hex("#060608"),
 	ScrimTransparency = 0.52,
 }
 
@@ -24516,32 +24619,32 @@ __modules["themes/Light"] = function()
 --!nonstrict
 local hex = Color3.fromHex
 return {
-	Canvas = hex("#F5F6F8"),
-	Background = hex("#F5F6F8"),
-	Sidebar = hex("#F8F9FB"),
+	Canvas = hex("#F7F7F9"),
+	Background = hex("#F7F7F9"),
+	Sidebar = hex("#F3F3F5"),
 	Surface = hex("#FFFFFF"),
 	SurfaceRaised = hex("#FFFFFF"),
-	SurfaceInset = hex("#F1F3F6"),
-	SurfaceSecondary = hex("#F0F2F5"),
-	SurfaceHover = hex("#E9ECF1"),
-	SurfaceActive = hex("#E1E5EB"),
-	Control = hex("#F8F9FB"),
-	ControlHover = hex("#F2F4F7"),
-	ControlPressed = hex("#EAEDF2"),
+	SurfaceInset = hex("#EFEEEE"),
+	SurfaceSecondary = hex("#EEEDEF"),
+	SurfaceHover = hex("#E8E8EB"),
+	SurfaceActive = hex("#E0E0E3"),
+	Control = hex("#F5F5F7"),
+	ControlHover = hex("#F0F0F2"),
+	ControlPressed = hex("#E8E8EB"),
 	ControlInset = hex("#FFFFFF"),
-	BorderSubtle = hex("#E7EAF0"),
-	Border = hex("#DDE2E9"),
-	BorderStrong = hex("#C8D0DB"),
-	Text = hex("#15181D"),
-	TextSecondary = hex("#586372"),
-	TextTertiary = hex("#7F8998"),
-	TextDisabled = hex("#AAB2BE"),
-	Accent = hex("#6E5DE7"),
-	Success = hex("#169D63"),
-	Warning = hex("#B77A09"),
-	Error = hex("#D84A50"),
-	Info = hex("#147FBE"),
-	Scrim = hex("#15181D"),
+	BorderSubtle = hex("#E4E4E8"),
+	Border = hex("#DCDCE0"),
+	BorderStrong = hex("#C8C8CC"),
+	Text = hex("#18181B"),
+	TextSecondary = hex("#606068"),
+	TextTertiary = hex("#8A8A90"),
+	TextDisabled = hex("#ACACB0"),
+	Accent = hex("#6B5BE0"),
+	Success = hex("#168F5C"),
+	Warning = hex("#9A6808"),
+	Error = hex("#C83838"),
+	Info = hex("#1478B0"),
+	Scrim = hex("#18181B"),
 	ScrimTransparency = 0.58,
 }
 

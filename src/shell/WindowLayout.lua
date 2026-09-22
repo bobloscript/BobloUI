@@ -2,6 +2,7 @@
 -- Window geometry, responsive layout, drawer, drag, and resize behavior.
 
 local Create = require("@runtime/Create")
+local Icon = require("@primitives/Icon")
 
 local New = Create.New
 local WindowLayout = {}
@@ -73,12 +74,109 @@ function WindowLayout:_buildBody()
 		Parent = self._navPanel,
 	})
 	New("UIPadding", {
-		PaddingTop = UDim.new(0, 12),
+		PaddingTop = UDim.new(0, 4),
 		PaddingLeft = UDim.new(0, 8),
 		PaddingRight = UDim.new(0, 8),
 		Parent = self._navList,
 	})
-	Create.List(4).Parent = self._navList
+	Create.List(2).Parent = self._navList
+
+	-- Sidebar header: brand mark + title + subtitle
+	local sidebarHeader = New("Frame", {
+		Name = "SidebarHeader",
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		LayoutOrder = -1000,
+		Parent = self._navList,
+	})
+	local sidebarHeaderLayout = Create.List(2)
+	sidebarHeaderLayout.Parent = sidebarHeader
+
+	-- Brand mark in sidebar
+	self._sidebarBrand = New("Frame", {
+		Name = "BrandMark",
+		Size = UDim2.fromOffset(28, 28),
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
+		Parent = sidebarHeader,
+	})
+	New("UICorner", { CornerRadius = UDim.new(0, tokens:Get("CornerSm")), Parent = self._sidebarBrand })
+	local brandStroke = New("UIStroke", { Thickness = 1, Transparency = 0.46, Parent = self._sidebarBrand })
+	self:_bind(self._sidebarBrand, { BackgroundColor3 = "AccentSoft" })
+	self:_bind(brandStroke, { Color = "AccentBorder" })
+	self._sidebarBrandDot = New("Frame", {
+		Name = "StatusDot",
+		Size = UDim2.fromOffset(5, 5),
+		Position = UDim2.new(1, -1, 0, 1),
+		AnchorPoint = Vector2.new(1, 0),
+		BorderSizePixel = 0,
+		Parent = self._sidebarBrand,
+	})
+	New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._sidebarBrandDot })
+	self:_bind(self._sidebarBrandDot, { BackgroundColor3 = "Accent" })
+	if self.Icon then
+		self._sidebarBrandGlyph = Icon.new(self, self.Icon, {
+			Size = UDim2.fromOffset(15, 15),
+			Position = UDim2.fromScale(0.5, 0.5),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Parent = self._sidebarBrand,
+		})
+		Icon.setColor(self._sidebarBrandGlyph, self.Theme:Get("Accent"))
+	else
+		self._sidebarBrandGlyph = New("TextLabel", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Font = self.Fonts.Bold,
+			TextSize = 14,
+			Text = self.Title:sub(1, 1):upper(),
+			Parent = self._sidebarBrand,
+		})
+		self:_bind(self._sidebarBrandGlyph, { TextColor3 = "Accent" })
+	end
+
+	-- Title in sidebar
+	self._sidebarTitle = New("TextLabel", {
+		Name = "SidebarTitle",
+		Size = UDim2.new(1, -36, 0, 18),
+		Position = UDim2.fromOffset(0, 2),
+		BackgroundTransparency = 1,
+		Font = self.Fonts.Bold,
+		TextSize = tokens:Get("FontBody"),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Text = self.Title,
+		Parent = sidebarHeader,
+	})
+	self:_bind(self._sidebarTitle, { TextColor3 = "Text" })
+
+	-- Subtitle in sidebar
+	self._sidebarSubtitle = New("TextLabel", {
+		Name = "SidebarSubtitle",
+		Size = UDim2.new(1, -36, 0, 14),
+		Position = UDim2.fromOffset(0, 20),
+		BackgroundTransparency = 1,
+		Font = self.Fonts.Regular,
+		TextSize = tokens:Get("FontCaption"),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Text = self.Subtitle or "",
+		Visible = self.Subtitle ~= nil and not self._minimal,
+		Parent = sidebarHeader,
+	})
+	self:_bind(self._sidebarSubtitle, { TextColor3 = "TextTertiary" })
+
+	-- Divider after sidebar header
+	local sidebarDivider = New("Frame", {
+		Name = "SidebarDivider",
+		Size = UDim2.new(1, 0, 0, 1),
+		BorderSizePixel = 0,
+		LayoutOrder = -999,
+		Parent = self._navList,
+	})
+	sidebarDivider.BackgroundTransparency = 0.5
+	self:_bind(sidebarDivider, { BackgroundColor3 = "BorderSubtle" })
 
 	self._content = New("Frame", {
 		Name = "Content",
@@ -262,9 +360,15 @@ function WindowLayout:_applyLayout(layout: string, initial: boolean?)
 		if tab._badge then
 			tab._badge.Visible = not railMode and not self._sidebarHidden
 		end
-		if tab._avatarBack then
-			tab._avatarBack.Position = if railMode then UDim2.fromScale(0.5, 0.5) else UDim2.new(0, 6, 0.5, 0)
-			tab._avatarBack.AnchorPoint = if railMode then Vector2.new(0.5, 0.5) else Vector2.new(0, 0.5)
+		if tab._avatar then
+			if railMode then
+				tab._avatar.Position = UDim2.fromScale(0.5, 0.5)
+				tab._avatar.AnchorPoint = Vector2.new(0.5, 0.5)
+			else
+				local t = self.Tokens
+				tab._avatar.Position = UDim2.new(0, 8, 0.5, 0)
+				tab._avatar.AnchorPoint = Vector2.new(0, 0.5)
+			end
 		end
 	end
 

@@ -50,6 +50,7 @@ Stateful: **yes**
 - `NoUI`: boolean?
 - `Mobile`: boolean?
 - `MobileText`: string?
+- `ShowInHUD`: boolean?
 
 ## Specific methods
 - `SetMode()` — Change Toggle/Hold/Always mode.

@@ -83,7 +83,7 @@ function Section.new(tab, options)
 	end))
 	self._janitor:Add(self._window.Theme.Changed:Connect(function()
 		if self._sectionIcon then
-			Icon.setColor(self._sectionIcon, self._window.Theme:Get("Accent"))
+			Icon.setColor(self._sectionIcon, self._window.Theme:Get("TextSecondary"))
 		end
 	end))
 	Dependency.Bind(self, options.VisibleWhen, "visible")
@@ -142,8 +142,8 @@ function Section:_mount()
 		local headerClass = if self.Collapsible then "TextButton" else "Frame"
 		self._header = Create.New(headerClass, {
 			Name = "SectionHeader",
-			Size = UDim2.new(1, 0, 0, if w._minimal then 28 elseif self.Description then 52 else 42),
-			BackgroundTransparency = if w._minimal then 1 else 0.28,
+			Size = UDim2.new(1, 0, 0, if self.Description then 36 else 28),
+			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Text = headerClass == "TextButton" and "" or nil,
 			AutoButtonColor = headerClass == "TextButton" and false or nil,
@@ -152,77 +152,45 @@ function Section:_mount()
 		if w._minimal then
 			self._header.Visible = self.Collapsible
 		end
-		Create.New("UICorner", { CornerRadius = UDim.new(0, math.max(6, t:Get("CornerSm"))), Parent = self._header })
-		self._headerStroke = Create.New("UIStroke", {
-			Thickness = 1,
-			Transparency = 0.5,
-			LineJoinMode = Enum.LineJoinMode.Round,
-			Parent = self._header,
-		})
-		w:_bind(self._header, { BackgroundColor3 = "SurfaceRaised" })
-		w:_bind(self._headerStroke, { Color = "BorderSubtle" })
-		if w._minimal then
-			self._headerStroke.Enabled = false
+		local iconOffset = 0
+		if self.Icon then
+			self._sectionIcon = Icon.new(w, self.Icon, {
+				Size = UDim2.fromOffset(t:Get("IconSm"), t:Get("IconSm")),
+				Position = UDim2.fromOffset(0, 0),
+				AnchorPoint = Vector2.new(0, 0),
+				Parent = self._header,
+			})
+			Icon.setColor(self._sectionIcon, w.Theme:Get("TextSecondary"))
+			iconOffset = t:Get("IconSm") + 6
+			if w._minimal then
+				self._sectionIcon.Visible = false
+				iconOffset = 0
+			end
 		end
-		self._headerAccent = Create.New("Frame", {
-			Name = "AccentRail",
-			Size = UDim2.fromOffset(3, 18),
-			Position = UDim2.new(0, 0, 0.5, 0),
-			AnchorPoint = Vector2.new(0, 0.5),
-			BorderSizePixel = 0,
-			Parent = self._header,
-		})
-		Create.New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._headerAccent })
-		w:_bind(self._headerAccent, { BackgroundColor3 = "Accent" })
-		if w._minimal then
-			self._headerAccent.Visible = false
-		end
-		self._sectionIconHost = Create.New("Frame", {
-			Name = "IconTile",
-			Size = UDim2.fromOffset(28, 28),
-			Position = UDim2.new(0, 8, 0.5, 0),
-			AnchorPoint = Vector2.new(0, 0.5),
-			BorderSizePixel = 0,
-			Parent = self._header,
-		})
-		Create.New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = self._sectionIconHost })
-		local iconStroke =
-			Create.New("UIStroke", { Thickness = 1, Transparency = 0.62, Parent = self._sectionIconHost })
-		w:_bind(self._sectionIconHost, { BackgroundColor3 = "AccentSoft" })
-		w:_bind(iconStroke, { Color = "AccentBorder" })
-		self._sectionIcon = Icon.new(w, self.Icon, {
-			Size = UDim2.fromOffset(15, 15),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = self._sectionIconHost,
-		})
-		Icon.setColor(self._sectionIcon, w.Theme:Get("Accent"))
-		if w._minimal then
-			self._sectionIconHost.Visible = false
-		end
+		local chevronOffset = if self.Collapsible then 24 else 0
 		self._title = Create.New("TextLabel", {
-			Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, if self.Description then 20 else 42),
-			Position = UDim2.fromOffset(44, if self.Description then 5 else 0),
+			Size = UDim2.new(1, -iconOffset - chevronOffset, 1, 0),
+			Position = UDim2.fromOffset(iconOffset, 0),
 			BackgroundTransparency = 1,
 			Font = w.Fonts.Medium,
-			TextSize = t:Get("FontTitle"),
+			TextSize = t:Get("FontBody"),
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Text = w.Locale:Resolve(self.Title),
 			Parent = self._header,
 		})
-		w:_bind(self._title, { TextColor3 = "Text" })
+		w:_bind(self._title, { TextColor3 = "TextSecondary" })
 		if w._minimal then
-			self._title.Position = UDim2.fromOffset(4, 0)
-			self._title.Size = UDim2.new(1, if self.Collapsible then -38 else -4, 1, 0)
+			self._title.Size = UDim2.new(1, if self.Collapsible then -28 else 0, 1, 0)
+			self._title.Position = UDim2.fromOffset(0, 0)
 			self._title.TextSize = t:Get("FontSmall")
 		end
 		if self.Description then
 			self._desc = Create.New("TextLabel", {
-				Size = UDim2.new(1, if self.Collapsible then -82 else -50, 0, 16),
-				Position = UDim2.fromOffset(44, 27),
+				Size = UDim2.new(1, -iconOffset - chevronOffset, 0, 14),
+				Position = UDim2.fromOffset(iconOffset, 22),
 				BackgroundTransparency = 1,
 				Font = w.Fonts.Regular,
-				TextSize = t:Get("FontSmall"),
+				TextSize = t:Get("FontCaption"),
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				Text = w.Locale:Resolve(self.Description),
@@ -234,31 +202,19 @@ function Section:_mount()
 			end
 		end
 		if self.Collapsible then
-			self._chevronBack = Create.New("Frame", {
-				Name = "ChevronTile",
-				Size = UDim2.fromOffset(26, 26),
-				Position = UDim2.new(1, -7, 0.5, 0),
+			self._chevron = Icon.new(w, "chevron_down", {
+				Size = UDim2.fromOffset(14, 14),
+				Position = UDim2.new(1, -4, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 0.32,
 				Parent = self._header,
 			})
-			Create.New("UICorner", { CornerRadius = UDim.new(0, 7), Parent = self._chevronBack })
-			w:_bind(self._chevronBack, { BackgroundColor3 = "ControlHover" })
-			self._chevron = Icon.new(w, "chevron_down", {
-				Size = UDim2.fromOffset(15, 15),
-				Position = UDim2.fromScale(0.5, 0.5),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Parent = self._chevronBack,
-			})
+			Icon.setColor(self._chevron, w.Theme:Get("TextTertiary"))
 			self._chevron.Rotation = if self.Collapsed then -90 else 0
 			self._janitor:Add(self._header.MouseEnter:Connect(function()
-				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 0.12 })
-				w.Motion:Tween(self._headerStroke, "Fast", { Transparency = 0.46 })
+				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 0.88 })
 			end))
 			self._janitor:Add(self._header.MouseLeave:Connect(function()
-				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 0.28 })
-				w.Motion:Tween(self._headerStroke, "Fast", { Transparency = 0.7 })
+				w.Motion:Tween(self._header, "Fast", { BackgroundTransparency = 1 })
 			end))
 			self._janitor:Add(self._header.MouseButton1Click:Connect(function()
 				self:SetCollapsed(not self.Collapsed)
@@ -453,13 +409,13 @@ function Section:_applyTokens()
 	self:_updateContentLayout()
 	self:_updateAdaptiveControls(true)
 	if self._title then
-		self._title.TextSize = t:Get(if self._window._minimal then "FontSmall" else "FontTitle")
+		self._title.TextSize = t:Get(if self._window._minimal then "FontSmall" else "FontBody")
 	end
 	if self._desc then
-		self._desc.TextSize = t:Get("FontSmall")
+		self._desc.TextSize = t:Get("FontCaption")
 	end
 	if self._header then
-		self._header.Size = UDim2.new(1, 0, 0, if self._window._minimal then 28 elseif self.Description then 52 else 42)
+		self._header.Size = UDim2.new(1, 0, 0, if self.Description then 36 else 28)
 	end
 end
 function Section:_refreshSeparators()
@@ -609,14 +565,21 @@ function Section:SetIcon(icon)
 		self._sectionIcon:Destroy()
 		self._sectionIcon = nil
 	end
-	if self._sectionIconHost then
+	if self._header and icon then
+		local t = self._window.Tokens
+		local iconOffset = t:Get("IconSm") + 6
 		self._sectionIcon = Icon.new(self._window, self.Icon, {
-			Size = UDim2.fromOffset(15, 15),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = self._sectionIconHost,
+			Size = UDim2.fromOffset(t:Get("IconSm"), t:Get("IconSm")),
+			Position = UDim2.fromOffset(0, 0),
+			AnchorPoint = Vector2.new(0, 0),
+			Parent = self._header,
 		})
-		Icon.setColor(self._sectionIcon, self._window.Theme:Get("Accent"))
+		Icon.setColor(self._sectionIcon, self._window.Theme:Get("TextSecondary"))
+		if self._title then
+			self._title.Position = UDim2.fromOffset(iconOffset, 0)
+			local chevronOffset = if self.Collapsible then 24 else 0
+			self._title.Size = UDim2.new(1, -iconOffset - chevronOffset, 1, 0)
+		end
 	end
 	return self
 end

@@ -296,7 +296,8 @@
         "Clicked": "function?",
         "NoUI": "boolean?",
         "Mobile": "boolean?",
-        "MobileText": "string?"
+        "MobileText": "string?",
+        "ShowInHUD": "boolean?"
       },
       "methods": {
         "SetMode": "Change Toggle/Hold/Always mode.",

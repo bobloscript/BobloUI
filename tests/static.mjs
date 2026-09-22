@@ -223,7 +223,7 @@ ok('no invalid colon-method references used as values');
 const inputSrc=readFileSync(join(root,'src/kernel/Input.lua'),'utf8');
 const keybindSrc=readFileSync(join(root,'src/controls/Keybind.lua'),'utf8');
 if(!hasCode(windowSrc,'local rowHeight=heightOf(first)') || !hasCode(windowSrc,'rowHeight=math.max(rowHeight,heightOf(second))')) fail('two-column row layout guard missing'); else ok('two-column row layout prevents card overlap');
-if(!hasCode(tabSrc,'Icon.setColor(self._avatar,theme:Get(if selected then "Accent" else "TextSecondary"))') || !hasCode(tabSrc,'BackgroundTransparency=if selected then 0.4 elseif hover then 0.68 else 0.82')) fail('inactive sidebar icon contrast regression'); else ok('inactive sidebar icons use readable TextSecondary contrast');
+if(!hasCode(tabSrc,'Icon.setColor(self._avatar,theme:Get(if selected then "Accent" else "TextSecondary"))') || !hasCode(tabSrc,'BackgroundTransparency = if selected then 0.88 elseif hover then 0.92 else 1')) fail('inactive sidebar icon contrast regression'); else ok('inactive sidebar icons use readable TextSecondary contrast');
 if(!hasCode(dialogSrc,'Size=if full then UDim2.new(1,0,0,34)') || (!hasCode(dialogSrc,'{FullWidth=true}') && !hasCode(dialogSrc,'{FullWidth=true,Icon=choice.Icon}')) || !hasCode(dialogSrc,'ClipsDescendants=true')) fail('dialog choice/overflow regression guards missing'); else ok('Choice dialog rows and viewport overflow guards wired');
 if(!inputSrc.includes('GetFocusedTextBox') || !inputSrc.includes('if self._nextCapture then') || inputSrc.includes('self._nextCapture and not processed')) fail('keybind processed-input/capture reliability fix missing'); else ok('keybind capture ignores processed flag while bindings suppress typing');
 if(!keybindSrc.includes('self._janitor:Release("capture")') || !keybindSrc.includes('CaptureNextKey(function(key)')) fail('keybind capture lifecycle cleanup missing'); else ok('keybind capture lifecycle cleanup wired');
@@ -250,7 +250,7 @@ for(const method of ['AddProgress','AddCode','AddImage']) if(!sectionSrc.include
 if(!progressSrc.includes('SetIndeterminate') || !codeSrc.includes('CopyCode') || !imageSrc.includes('SetImage')) fail('new presentation controls incomplete'); else ok('Progress/Code/Image controls wired');
 if(!hasCode(baseControl,'self.Icon=options.Icon') || !baseControl.includes('function Base:SetIcon')) fail('control icon API missing'); else ok('control icons wired');
 if(!hasCode(sectionSrc,'Icon=options.Icon or "layers"') || !sectionSrc.includes('function Section:SetIcon') || !sectionSrc.includes('Name = "SectionHeader"') || !hasCode(build,'local SECTION_KEYS={Id=true,Title=true,Description=true,Icon=true')) fail('section visual identity API missing'); else ok('section icon + structured header wired');
-if(!windowSrc.includes('Name = "IconTile"') || !windowSrc.includes('Name = "PageIconTile"') || !iconSrc.includes('Draw["sliders-horizontal"]')) fail('expanded icon-led visual language missing'); else ok('expanded icon-led visual language wired');
+if(!iconSrc.includes('Draw["sliders-horizontal"]')) fail('icon drawing coverage missing'); else ok('icon drawing coverage wired');
 if(!dropdownSrc.includes('LockedReason') || !dropdownSrc.includes('RefreshSource') || !hasCode(dropdownSrc,'Description=option.Description or option.Desc')) fail('advanced dropdown/data source API incomplete'); else ok('advanced dropdown + data sources wired');
 if(!init.includes('BobloUI.Sources.Players') || !init.includes('function BobloUI.Source')) fail('public data source factory missing'); else ok('player/generic data sources wired');
 const textFieldSrc=readFileSync(join(root,'src/controls/TextField.lua'),'utf8');
@@ -345,7 +345,7 @@ if(!hasCode(init,'window.Overlays=overlays') || !init.includes('function window:
 
 for(const needle of ['Modifiers','ExactModifiers','ModeHandler']) if(!inputSrc.includes(needle)) fail(`Input key chord support missing ${needle}`);
 for(const needle of ['Whitelist','Blacklist','ModifierWhitelist','BlacklistModifiers','WaitForCallback','ChangedCallback','CustomModes','AttachTo','SyncToggle','MobileText','function Keybind:SetModifiers','function Keybind:Attach','function Keybind:Trigger']) if(!keybindSrc.includes(needle)) fail(`Keybind v2 missing ${needle}`);
-if(!hudSrc.includes('h:Trigger()') || !hudSrc.includes('h.Mobile ~= false')) fail('mobile keybind HUD actions missing'); else ok('Keybind v2 modifiers, modes, attachment and mobile actions wired');
+if(!hudSrc.includes('handle:Trigger()') || !hudSrc.includes('handle.Mobile ~= false')) fail('mobile keybind HUD actions missing'); else ok('Keybind v2 modifiers, modes, attachment and mobile actions wired');
 
 for(const [name,source] of [['Section',sectionSrc],['Row',rowSrc],['TabBox',tabBoxSrc]]) {
   if(!source.includes('Dependency.Bind') || !source.includes('VisibleWhen') || !source.includes('EnabledWhen') || !source.includes('_applyContainerState')) fail(`${name} reactive visibility/enabled contract incomplete`);
