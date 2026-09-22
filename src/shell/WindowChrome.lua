@@ -81,6 +81,7 @@ function WindowChrome:_buildHeader()
 		Position = UDim2.new(0, 14, 0.5, 0),
 		AnchorPoint = Vector2.new(0, 0.5),
 		BorderSizePixel = 0,
+		Visible = false,
 		Parent = self._header,
 	})
 	New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = self._brandMark })
@@ -127,6 +128,7 @@ function WindowChrome:_buildHeader()
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 		Text = self.Title,
+		Visible = false,
 		Parent = self._header,
 	})
 	self:_bind(self._titleLabel, { TextColor3 = "Text" })
@@ -141,7 +143,7 @@ function WindowChrome:_buildHeader()
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 		Text = self.Subtitle or "",
-		Visible = self.Subtitle ~= nil,
+		Visible = false,
 		Parent = self._header,
 	})
 	self:_bind(self._subtitleLabel, { TextColor3 = "TextSecondary" })
@@ -231,6 +233,7 @@ function WindowChrome:_buildHeader()
 		BackgroundTransparency = 0.82,
 		AutoButtonColor = false,
 		Text = "",
+		Visible = false,
 		Parent = self._header,
 	})
 	New("UICorner", { CornerRadius = UDim.new(0, tokens:Get("CornerSm")), Parent = self._themeButton })
@@ -311,6 +314,7 @@ function WindowChrome:_buildFooter()
 		Size = UDim2.new(1, 0, 0, self._footerHeight),
 		Position = UDim2.new(0, 0, 1, -self._footerHeight),
 		BorderSizePixel = 0,
+		Visible = self._footerTextValue ~= nil,
 		Parent = self._root,
 	})
 	self._footerCorner = New("UICorner", {
@@ -367,6 +371,9 @@ end
 function WindowChrome:SetFooterText(text)
 	self._footerTextValue = if text == nil or text == false then nil else tostring(text)
 	self:_refreshFooterText()
+	if self._footer then
+		self._footer.Visible = self._footerTextValue ~= nil
+	end
 	return self
 end
 
@@ -377,6 +384,9 @@ end
 function WindowChrome:_refreshChromeIcons()
 	if self._brandGlyph and not self._brandGlyph:IsA("TextLabel") then
 		Icon.setColor(self._brandGlyph, self.Theme:Get("Accent"))
+	end
+	if self._sidebarBrandGlyph and not self._sidebarBrandGlyph:IsA("TextLabel") then
+		Icon.setColor(self._sidebarBrandGlyph, self.Theme:Get("Accent"))
 	end
 end
 
@@ -852,6 +862,12 @@ function WindowChrome:SetTitle(title: string)
 	if self._brandGlyph and self._brandGlyph:IsA("TextLabel") then
 		self._brandGlyph.Text = title:sub(1, 1):upper()
 	end
+	if self._sidebarBrandGlyph and self._sidebarBrandGlyph:IsA("TextLabel") then
+		self._sidebarBrandGlyph.Text = title:sub(1, 1):upper()
+	end
+	if self._sidebarTitle then
+		self._sidebarTitle.Text = title
+	end
 	self:_refreshHeaderTitle()
 	return self
 end
@@ -862,27 +878,52 @@ function WindowChrome:SetIcon(icon)
 		self._brandGlyph:Destroy()
 		self._brandGlyph = nil
 	end
-	if not self._brandMark then
-		return self
+	if self._sidebarBrandGlyph then
+		self._sidebarBrandGlyph:Destroy()
+		self._sidebarBrandGlyph = nil
 	end
 	if icon then
-		self._brandGlyph = Icon.new(self, icon, {
-			Size = UDim2.fromOffset(15, 15),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = self._brandMark,
-		})
-		Icon.setColor(self._brandGlyph, self.Theme:Get("Accent"))
+		if self._brandMark then
+			self._brandGlyph = Icon.new(self, icon, {
+				Size = UDim2.fromOffset(15, 15),
+				Position = UDim2.fromScale(0.5, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Parent = self._brandMark,
+			})
+			Icon.setColor(self._brandGlyph, self.Theme:Get("Accent"))
+		end
+		if self._sidebarBrand then
+			self._sidebarBrandGlyph = Icon.new(self, icon, {
+				Size = UDim2.fromOffset(15, 15),
+				Position = UDim2.fromScale(0.5, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Parent = self._sidebarBrand,
+			})
+			Icon.setColor(self._sidebarBrandGlyph, self.Theme:Get("Accent"))
+		end
 	else
-		self._brandGlyph = New("TextLabel", {
-			Size = UDim2.fromScale(1, 1),
-			BackgroundTransparency = 1,
-			Font = self.Fonts.Bold,
-			TextSize = 14,
-			Text = self.Title:sub(1, 1):upper(),
-			Parent = self._brandMark,
-		})
-		self:_bind(self._brandGlyph, { TextColor3 = "Accent" })
+		if self._brandMark then
+			self._brandGlyph = New("TextLabel", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Font = self.Fonts.Bold,
+				TextSize = 14,
+				Text = self.Title:sub(1, 1):upper(),
+				Parent = self._brandMark,
+			})
+			self:_bind(self._brandGlyph, { TextColor3 = "Accent" })
+		end
+		if self._sidebarBrand then
+			self._sidebarBrandGlyph = New("TextLabel", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Font = self.Fonts.Bold,
+				TextSize = 14,
+				Text = self.Title:sub(1, 1):upper(),
+				Parent = self._sidebarBrand,
+			})
+			self:_bind(self._sidebarBrandGlyph, { TextColor3 = "Accent" })
+		end
 	end
 	self:_refreshChromeIcons()
 	return self
@@ -891,7 +932,11 @@ end
 function WindowChrome:SetSubtitle(text: string?)
 	self.Subtitle = text
 	self._subtitleLabel.Text = text or ""
-	self._subtitleLabel.Visible = text ~= nil and self._layout ~= "Drawer" and not self._minimal
+	self._subtitleLabel.Visible = false
+	if self._sidebarSubtitle then
+		self._sidebarSubtitle.Text = text or ""
+		self._sidebarSubtitle.Visible = text ~= nil and not self._minimal
+	end
 	self:_applyTokens()
 	return self
 end

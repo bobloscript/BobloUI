@@ -877,6 +877,9 @@
                     },
                     "MobileText": {
                       "type": "string"
+                    },
+                    "ShowInHUD": {
+                      "type": "boolean"
                     }
                   }
                 },
@@ -2727,6 +2730,9 @@
                           },
                           "MobileText": {
                             "type": "string"
+                          },
+                          "ShowInHUD": {
+                            "type": "boolean"
                           }
                         }
                       },

@@ -267,17 +267,6 @@ function Base:_mount()
 	self._janitor:Add(self._root)
 	Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._root })
 	w:_bind(self._root, { BackgroundColor3 = "ControlHover" })
-	self._hoverRail = Create.New("Frame", {
-		Name = "HoverRail",
-		Size = UDim2.fromOffset(2, 18),
-		Position = UDim2.new(0, 0, 0.5, 0),
-		AnchorPoint = Vector2.new(0, 0.5),
-		BorderSizePixel = 0,
-		BackgroundTransparency = 1,
-		Parent = self._root,
-	})
-	Create.New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = self._hoverRail })
-	w:_bind(self._hoverRail, { BackgroundColor3 = "Accent" })
 	self._separator = Create.New("Frame", {
 		Name = "Separator",
 		Size = UDim2.new(1, -pad * 2, 0, 1),
@@ -358,7 +347,7 @@ function Base:_mount()
 	self._disabledOverlay = Create.New("Frame", {
 		Name = "DisabledOverlay",
 		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 0.58,
+		BackgroundTransparency = 0.65,
 		BorderSizePixel = 0,
 		Active = true,
 		Visible = false,
@@ -392,12 +381,9 @@ function Base:_applyHoverVisual(hover)
 	self._root.BackgroundColor3 = self._window.Theme:Get("ControlHover")
 	local active = hover and not self._disabled
 	self._window.Motion:Tween(self._root, "Fast", {
-		BackgroundTransparency = if active then (if self._window._minimal then 0.54 else 0.74)
-			else (if self._window._minimal then 0.78 else 1),
+		BackgroundTransparency = if active then (if self._window._minimal then 0.88 else 0.92)
+			else (if self._window._minimal then 0.94 else 1),
 	})
-	if self._hoverRail then
-		self._window.Motion:Tween(self._hoverRail, "Fast", { BackgroundTransparency = if active then 0.16 else 1 })
-	end
 end
 function Base:_resolve(v)
 	return self._window.Locale and self._window.Locale:Resolve(v) or v

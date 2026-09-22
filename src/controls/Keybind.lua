@@ -100,6 +100,7 @@ function Keybind.new(section, options)
 	self.Mobile = options.Mobile ~= false
 	self.MobileText = options.MobileText or options.Title
 	self.NoUI = options.NoUI == true
+	self.ShowInHUD = options.ShowInHUD
 	self._attached = options.AttachTo
 	local syncToggle = if options.SyncToggle ~= nil then options.SyncToggle else options.SyncToggleState
 	self.SyncToggle = if syncToggle == nil

@@ -161,6 +161,7 @@ local WINDOW_OPTIONS = {
 	"NotificationPosition",
 	"Watermark",
 	"KeybindHUD",
+	"KeybindHUDSide",
 	"CustomCursor",
 }
 local function checkOptions(options)
@@ -637,7 +638,17 @@ function BobloUI:CreateWindow(options)
 		return self
 	end
 	function window:SetKeybindHUD(enabled)
-		hud:SetKeybindHUD(enabled)
+		if enabled == true then
+			hud:SetKeybindHUD("Auto")
+		elseif enabled == false then
+			hud:SetKeybindHUD(false)
+		else
+			hud:SetKeybindHUD(enabled)
+		end
+		return self
+	end
+	function window:SetKeybindHUDSide(side)
+		hud:SetKeybindHUDSide(side)
 		return self
 	end
 	function window:SetCustomCursor(enabled, options)
@@ -766,7 +777,10 @@ function BobloUI:CreateWindow(options)
 		window:SetWatermark(options.Watermark)
 	end
 	if options.KeybindHUD then
-		window:SetKeybindHUD(true)
+		window:SetKeybindHUD(options.KeybindHUD)
+	end
+	if options.KeybindHUDSide then
+		window:SetKeybindHUDSide(options.KeybindHUDSide)
 	end
 	if options.CustomCursor then
 		window:SetCustomCursor(true, type(options.CustomCursor) == "table" and options.CustomCursor or nil)
