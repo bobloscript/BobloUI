@@ -43,7 +43,7 @@ function Section.new(tab, options)
 		Id = options.Id,
 		Title = options.Title,
 		Description = options.Description,
-		Icon = options.Icon or "layers",
+		Icon = options.Icon,
 		Collapsible = options.Collapsible == true,
 		Collapsed = options.Collapsed == true,
 		Column = column,
@@ -560,7 +560,7 @@ function Section:SetTitle(t)
 	return self
 end
 function Section:SetIcon(icon)
-	self.Icon = icon or "layers"
+	self.Icon = icon
 	if self._sectionIcon then
 		self._sectionIcon:Destroy()
 		self._sectionIcon = nil
@@ -580,6 +580,11 @@ function Section:SetIcon(icon)
 			local chevronOffset = if self.Collapsible then 24 else 0
 			self._title.Size = UDim2.new(1, -iconOffset - chevronOffset, 1, 0)
 		end
+	elseif self._title then
+		-- No icon: reset title to full width
+		local chevronOffset = if self.Collapsible then 24 else 0
+		self._title.Position = UDim2.fromOffset(0, 0)
+		self._title.Size = UDim2.new(1, -chevronOffset, 1, 0)
 	end
 	return self
 end

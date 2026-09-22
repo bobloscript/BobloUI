@@ -357,14 +357,6 @@ function Base:_mount()
 	Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._disabledOverlay })
 	w:_bind(self._disabledOverlay, { BackgroundColor3 = "Canvas" })
 
-	self._focusStroke = Create.New("UIStroke", {
-		Name = "FocusStroke",
-		Thickness = 1.5,
-		Transparency = 1,
-		Parent = self._root,
-	})
-	w:_bind(self._focusStroke, { Color = "Accent" })
-
 	self._janitor:Add(self._root.MouseEnter:Connect(function()
 		self:_applyHoverVisual(true)
 	end))

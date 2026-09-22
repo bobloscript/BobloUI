@@ -438,13 +438,6 @@ Parent = self._root,
 })
 Create.New("UICorner", { CornerRadius = UDim.new(0, t:Get("ControlRadius")), Parent = self._disabledOverlay })
 w:_bind(self._disabledOverlay, { BackgroundColor3 = "Canvas" })
-self._focusStroke = Create.New("UIStroke", {
-Name = "FocusStroke",
-Thickness = 1.5,
-Transparency = 1,
-Parent = self._root,
-})
-w:_bind(self._focusStroke, { Color = "Accent" })
 self._janitor:Add(self._root.MouseEnter:Connect(function()
 self:_applyHoverVisual(true)
 end))
@@ -14907,6 +14900,8 @@ _keybindSide = "Right",
 _alive = true,
 _rows = {},
 _bindings = {},
+_trackJanitor = nil,
+_activePollThread = nil,
 }, HUD)
 return self
 end
@@ -14964,7 +14959,6 @@ if self._keybind then
 return
 end
 local w = self._window
-local _, safeSize = w.Device:SafeArea()
 local side = self._keybindSide
 self._keybind = Create.New("Frame", {
 Name = "KeybindHUD",
@@ -15026,6 +15020,14 @@ end
 end
 function HUD:_destroyKeybind()
 if self._keybind then
+for id, data in self._rows do
+if data._themeHandles then
+self._window.Theme:Unbind(data._themeHandles)
+end
+if data._keyHandles then
+self._window.Theme:Unbind(data._keyHandles)
+end
+end
 self._keybind:Destroy()
 self._keybind = nil
 end
@@ -15036,6 +15038,7 @@ if enabled == true or enabled == "Auto" then
 self._keybindEnabled = true
 elseif enabled == false or enabled == nil then
 self._keybindEnabled = false
+self:_stopActivePoll()
 self:_destroyKeybind()
 end
 if self._keybindEnabled then
@@ -15065,11 +15068,13 @@ local w = self._window
 self._janitor:Add(w.Registry.Added:Connect(function(entry)
 if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
 self:_trackKeybind(entry.Handle, entry.Id)
+self:_updateContainerVisibility()
 end
 end))
 self._janitor:Add(w.Registry.Removed:Connect(function(entry)
 if entry.Type == "Keybind" then
 self:_untrackKeybind(entry.Id)
+self:_updateContainerVisibility()
 end
 end))
 for _, entry in w.Registry:Entries() do
@@ -15082,7 +15087,6 @@ function HUD:_trackKeybind(handle, id)
 if self._bindings[id] then
 return
 end
-local w = self._window
 local janitor = Janitor.new(`HUD_keybind[{id}]`)
 self._bindings[id] = { Handle = handle, Janitor = janitor }
 janitor:Add(handle.Changed:Connect(function()
@@ -15090,10 +15094,9 @@ if self._keybindEnabled then
 self:_updateRow(id)
 end
 end))
-if self._keybindEnabled then
+if self._keybindEnabled and self:_shouldShowKeybind(handle) then
 self:_ensureRow(handle, id)
 self:_updateRow(id)
-self:_updateContainerVisibility()
 end
 end
 function HUD:_untrackKeybind(id)
@@ -15102,18 +15105,22 @@ if binding then
 binding.Janitor:Destroy()
 self._bindings[id] = nil
 end
-local row = self._rows[id]
-if row then
-row:Destroy()
+local data = self._rows[id]
+if data then
+if data._themeHandles then
+self._window.Theme:Unbind(data._themeHandles)
+end
+if data._keyHandles then
+self._window.Theme:Unbind(data._keyHandles)
+end
+if data.Instance and data.Instance.Parent then
+data.Instance:Destroy()
+end
 self._rows[id] = nil
 end
-self:_updateContainerVisibility()
 end
 function HUD:_shouldShowKeybind(handle)
 if not handle or handle._destroyed then
-return false
-end
-if handle.NoUI then
 return false
 end
 if handle.ShowInHUD == false then
@@ -15146,8 +15153,22 @@ TextSize = w.Tokens:Get("FontSmall"),
 TextXAlignment = Enum.TextXAlignment.Left,
 Parent = self._keybind,
 })
-w:_bind(row, { TextColor3 = "TextSecondary", BackgroundColor3 = "ControlHover" })
-local keyLabel = Create.New("TextLabel", {
+local titleLabel = Create.New("TextLabel", {
+Name = "TitleLabel",
+Size = UDim2.new(1, -50, 1, 0),
+BackgroundTransparency = 1,
+Font = w.Fonts.Regular,
+TextSize = w.Tokens:Get("FontSmall"),
+TextXAlignment = Enum.TextXAlignment.Left,
+TextTruncate = Enum.TextTruncate.AtEnd,
+Text = handle.MobileText or handle.Title or id,
+Parent = row,
+})
+local titleHandles = w:_bind(titleLabel, { TextColor3 = "TextSecondary" })
+local keyLabel = nil
+local keyHandles = {}
+if not isMobile then
+keyLabel = Create.New("TextLabel", {
 Name = "KeyPill",
 AutomaticSize = Enum.AutomaticSize.X,
 Size = UDim2.new(0, 0, 0, 18),
@@ -15166,9 +15187,10 @@ PaddingLeft = UDim.new(0, 5),
 PaddingRight = UDim.new(0, 5),
 Parent = keyLabel,
 })
-w:_bind(keyLabel, { BackgroundColor3 = "SurfaceInset", TextColor3 = "TextTertiary" })
+keyHandles = w:_bind(keyLabel, { BackgroundColor3 = "SurfaceInset", TextColor3 = "TextTertiary" })
 local keyStroke = Create.New("UIStroke", { Thickness = 1, Transparency = 0.5, Parent = keyLabel })
 w:_bind(keyStroke, { Color = "BorderSubtle" })
+end
 if isMobile then
 Create.New("UICorner", { CornerRadius = UDim.new(0, 5), Parent = row })
 Create.New("UIPadding", {
@@ -15176,57 +15198,158 @@ PaddingLeft = UDim.new(0, 6),
 PaddingRight = UDim.new(0, 6),
 Parent = row,
 })
+local bgHandles = w:_bind(row, { BackgroundColor3 = "ControlHover" })
 row.MouseButton1Click:Connect(function()
 handle:Trigger()
 end)
+self._rows[id] = {
+Instance = row,
+TitleLabel = titleLabel,
+KeyLabel = keyLabel,
+_themeHandles = titleHandles,
+_keyHandles = keyHandles,
+_bgHandles = bgHandles,
+}
+else
+local rowHandles = w:_bind(row, { BackgroundColor3 = "ControlHover" })
+self._rows[id] = {
+Instance = row,
+TitleLabel = titleLabel,
+KeyLabel = keyLabel,
+_themeHandles = titleHandles,
+_keyHandles = keyHandles,
+_rowHandles = rowHandles,
+}
 end
-self._rows[id] = row
 self._janitor:Add(row)
-local titleWidth = handle.MobileText or handle.Title or id
-local estimatedWidth = #tostring(titleWidth) * 7 + 60
-self._keybind.Size = UDim2.fromOffset(math.max(200, estimatedWidth), 0)
 end
 function HUD:_updateRow(id)
-local row = self._rows[id]
+local data = self._rows[id]
 local binding = self._bindings[id]
-if not row or not binding then
+if not data or not binding then
 return
 end
 local handle = binding.Handle
 local w = self._window
-if not self:_shouldShowKeybind(handle) then
-row.Visible = false
+local isMobile = w.Device.Class == "Phone" and handle.Mobile ~= false
+local wasMobile = data.Instance:IsA("TextButton")
+if isMobile ~= wasMobile then
+if data._themeHandles then
+w.Theme:Unbind(data._themeHandles)
+end
+if data._keyHandles then
+w.Theme:Unbind(data._keyHandles)
+end
+if data._bgHandles then
+w.Theme:Unbind(data._bgHandles)
+end
+if data._rowHandles then
+w.Theme:Unbind(data._rowHandles)
+end
+data.Instance:Destroy()
+self._rows[id] = nil
+if self:_shouldShowKeybind(handle) then
+self:_ensureRow(handle, id)
+data = self._rows[id]
+if not data then
 return
 end
-row.Visible = true
+else
+return
+end
+end
+if not data then
+if self:_shouldShowKeybind(handle) then
+self:_ensureRow(handle, id)
+data = self._rows[id]
+end
+if not data then
+return
+end
+end
+if not self:_shouldShowKeybind(handle) then
+data.Instance.Visible = false
+return
+end
+data.Instance.Visible = true
 local v = handle:GetValue()
-local active = handle:IsActive()
+local active = handle.IsActive and handle:IsActive() or false
 local title = handle.MobileText or handle.Title or id
 local keyStr = keyText(v)
-row.Text = `  {title}`
-local keyLabel = row:FindFirstChild("KeyPill")
-if keyLabel then
-keyLabel.Text = `[  {keyStr}  ]`
-w:_bind(keyLabel, {
-BackgroundColor3 = if active then "AccentMuted" else "SurfaceInset",
-TextColor3 = if active then "Accent" else "TextTertiary",
-})
+if data.TitleLabel then
+data.TitleLabel.Text = title
+data.TitleLabel.TextColor3 = w.Theme:Get(if active then "Accent" else "TextSecondary")
 end
-w:_bind(row, {
-TextColor3 = if active then "Accent" else "TextSecondary",
-})
+if data.KeyLabel then
+data.KeyLabel.Text = `[  {keyStr}  ]`
+data.KeyLabel.BackgroundColor3 = w.Theme:Get(if active then "AccentMuted" else "SurfaceInset")
+data.KeyLabel.TextColor3 = w.Theme:Get(if active then "Accent" else "TextTertiary")
+end
+if data.Instance:IsA("TextButton") then
+data.Instance.BackgroundColor3 = w.Theme:Get("ControlHover")
+end
+end
+function HUD:_startActivePoll()
+if self._activePollThread then
+return
+end
+self._activePollThread = task.spawn(function()
+while self._alive and self._keybindEnabled do
+task.wait(0.5)
+if not self._alive or not self._keybindEnabled then
+break
+end
+for id, _ in self._rows do
+self:_updateRow(id)
+end
+end
+self._activePollThread = nil
+end)
+self._janitor:Add(self._activePollThread, nil, "activePoll")
+end
+function HUD:_stopActivePoll()
+if self._activePollThread then
+pcall(task.cancel, self._activePollThread)
+self._activePollThread = nil
+end
 end
 function HUD:_rebuildKeybinds()
 self:_startTracking()
+for id, data in self._rows do
+if data._themeHandles then
+self._window.Theme:Unbind(data._themeHandles)
+end
+if data._keyHandles then
+self._window.Theme:Unbind(data._keyHandles)
+end
+if data._bgHandles then
+self._window.Theme:Unbind(data._bgHandles)
+end
+if data._rowHandles then
+self._window.Theme:Unbind(data._rowHandles)
+end
+if data.Instance then
+data.Instance:Destroy()
+end
+end
+self._rows = {}
+for _, entry in self._window.Registry:Entries() do
+if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
+if self:_shouldShowKeybind(entry.Handle) then
+self:_ensureRow(entry.Handle, entry.Id)
+self:_updateRow(entry.Id)
+end
+end
+end
 self:_updateContainerVisibility()
+self:_startActivePoll()
 end
 function HUD:_updateContainerVisibility()
 if not self._keybindEnabled then
 return
 end
-local w = self._window
 local visibleCount = 0
-for _, entry in w.Registry:Entries() do
+for _, entry in self._window.Registry:Entries() do
 if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
 if self:_shouldShowKeybind(entry.Handle) then
 visibleCount += 1
@@ -15234,42 +15357,49 @@ end
 end
 end
 if visibleCount == 0 then
-self:_destroyKeybind()
+if self._keybind then
+self._keybind.Visible = false
+end
 return
 end
 self:_ensureKeybind()
-for _, entry in w.Registry:Entries() do
+self._keybind.Visible = true
+for _, entry in self._window.Registry:Entries() do
 if entry.Type == "Keybind" and entry.Handle and not entry.Handle._destroyed then
-if not self._bindings[entry.Id] then
-self:_trackKeybind(entry.Handle, entry.Id)
+local id = entry.Id
+if self:_shouldShowKeybind(entry.Handle) then
+if not self._rows[id] then
+self:_ensureRow(entry.Handle, id)
 end
-if self._rows[entry.Id] then
-self:_updateRow(entry.Id)
+self:_updateRow(id)
+elseif self._rows[id] then
+self._rows[id].Instance.Visible = false
 end
-end
-end
-for id, row in self._rows do
-local binding = self._bindings[id]
-if not binding or not binding.Handle or binding.Handle._destroyed then
-row:Destroy()
-self._rows[id] = nil
-elseif not self:_shouldShowKeybind(binding.Handle) then
-row.Visible = false
 end
 end
 end
 function HUD:RefreshKeybindHUD()
 if self._keybindEnabled then
-self:_updateContainerVisibility()
+self:_rebuildKeybinds()
 end
 return self
 end
 function HUD:Destroy()
 self._alive = false
+self:_stopActivePoll()
 for id, binding in self._bindings do
 binding.Janitor:Destroy()
 end
 self._bindings = {}
+for id, data in self._rows do
+if data._themeHandles then
+pcall(function() self._window.Theme:Unbind(data._themeHandles) end)
+end
+if data._keyHandles then
+pcall(function() self._window.Theme:Unbind(data._keyHandles) end)
+end
+end
+self._rows = {}
 self._janitor:Destroy()
 if self._watermark then
 self._watermark:Destroy()
@@ -19482,7 +19612,7 @@ local self = setmetatable({
 Id = options.Id,
 Title = options.Title,
 Description = options.Description,
-Icon = options.Icon or "layers",
+Icon = options.Icon,
 Collapsible = options.Collapsible == true,
 Collapsed = options.Collapsed == true,
 Column = column,
@@ -19998,7 +20128,7 @@ end
 return self
 end
 function Section:SetIcon(icon)
-self.Icon = icon or "layers"
+self.Icon = icon
 if self._sectionIcon then
 self._sectionIcon:Destroy()
 self._sectionIcon = nil
@@ -20018,6 +20148,10 @@ self._title.Position = UDim2.fromOffset(iconOffset, 0)
 local chevronOffset = if self.Collapsible then 24 else 0
 self._title.Size = UDim2.new(1, -iconOffset - chevronOffset, 1, 0)
 end
+elseif self._title then
+local chevronOffset = if self.Collapsible then 24 else 0
+self._title.Position = UDim2.fromOffset(0, 0)
+self._title.Size = UDim2.new(1, -chevronOffset, 1, 0)
 end
 return self
 end
@@ -22622,18 +22756,16 @@ Parent = self._navList,
 Create.List(2).Parent = self._navList
 local sidebarHeader = New("Frame", {
 Name = "SidebarHeader",
-Size = UDim2.new(1, 0, 0, 0),
-AutomaticSize = Enum.AutomaticSize.Y,
+Size = UDim2.new(1, 0, 0, 52),
 BackgroundTransparency = 1,
 BorderSizePixel = 0,
 LayoutOrder = -1000,
 Parent = self._navList,
 })
-local sidebarHeaderLayout = Create.List(2)
-sidebarHeaderLayout.Parent = sidebarHeader
 self._sidebarBrand = New("Frame", {
 Name = "BrandMark",
 Size = UDim2.fromOffset(28, 28),
+Position = UDim2.fromOffset(0, 6),
 BackgroundTransparency = 0,
 BorderSizePixel = 0,
 Parent = sidebarHeader,
@@ -22673,8 +22805,8 @@ self:_bind(self._sidebarBrandGlyph, { TextColor3 = "Accent" })
 end
 self._sidebarTitle = New("TextLabel", {
 Name = "SidebarTitle",
-Size = UDim2.new(1, -36, 0, 18),
-Position = UDim2.fromOffset(0, 2),
+Size = UDim2.new(1, -36, 0, 16),
+Position = UDim2.fromOffset(34, 6),
 BackgroundTransparency = 1,
 Font = self.Fonts.Bold,
 TextSize = tokens:Get("FontBody"),
@@ -22686,8 +22818,8 @@ Parent = sidebarHeader,
 self:_bind(self._sidebarTitle, { TextColor3 = "Text" })
 self._sidebarSubtitle = New("TextLabel", {
 Name = "SidebarSubtitle",
-Size = UDim2.new(1, -36, 0, 14),
-Position = UDim2.fromOffset(0, 20),
+Size = UDim2.new(1, -36, 0, 12),
+Position = UDim2.fromOffset(34, 22),
 BackgroundTransparency = 1,
 Font = self.Fonts.Regular,
 TextSize = tokens:Get("FontCaption"),
@@ -22860,7 +22992,7 @@ self._navToggle.Visible = drawerMode
 self._sidebarButton.Visible = true
 self._grip.Visible = not drawerMode and not self._locked
 if self._footer then
-self._footer.Visible = not drawerMode
+self._footer.Visible = not drawerMode and self._footerTextValue ~= nil
 end
 self._navPanel.Visible = not drawerMode and not self._sidebarHidden
 if self._sidebarGrip then

@@ -81,23 +81,21 @@ function WindowLayout:_buildBody()
 	})
 	Create.List(2).Parent = self._navList
 
-	-- Sidebar header: brand mark + title + subtitle
+	-- Sidebar header: brand mark + title + subtitle (absolute positioning, no list layout)
 	local sidebarHeader = New("Frame", {
 		Name = "SidebarHeader",
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
+		Size = UDim2.new(1, 0, 0, 52),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = -1000,
 		Parent = self._navList,
 	})
-	local sidebarHeaderLayout = Create.List(2)
-	sidebarHeaderLayout.Parent = sidebarHeader
 
 	-- Brand mark in sidebar
 	self._sidebarBrand = New("Frame", {
 		Name = "BrandMark",
 		Size = UDim2.fromOffset(28, 28),
+		Position = UDim2.fromOffset(0, 6),
 		BackgroundTransparency = 0,
 		BorderSizePixel = 0,
 		Parent = sidebarHeader,
@@ -136,11 +134,11 @@ function WindowLayout:_buildBody()
 		self:_bind(self._sidebarBrandGlyph, { TextColor3 = "Accent" })
 	end
 
-	-- Title in sidebar
+	-- Title in sidebar (right of brand mark)
 	self._sidebarTitle = New("TextLabel", {
 		Name = "SidebarTitle",
-		Size = UDim2.new(1, -36, 0, 18),
-		Position = UDim2.fromOffset(0, 2),
+		Size = UDim2.new(1, -36, 0, 16),
+		Position = UDim2.fromOffset(34, 6),
 		BackgroundTransparency = 1,
 		Font = self.Fonts.Bold,
 		TextSize = tokens:Get("FontBody"),
@@ -151,11 +149,11 @@ function WindowLayout:_buildBody()
 	})
 	self:_bind(self._sidebarTitle, { TextColor3 = "Text" })
 
-	-- Subtitle in sidebar
+	-- Subtitle in sidebar (below title)
 	self._sidebarSubtitle = New("TextLabel", {
 		Name = "SidebarSubtitle",
-		Size = UDim2.new(1, -36, 0, 14),
-		Position = UDim2.fromOffset(0, 20),
+		Size = UDim2.new(1, -36, 0, 12),
+		Position = UDim2.fromOffset(34, 22),
 		BackgroundTransparency = 1,
 		Font = self.Fonts.Regular,
 		TextSize = tokens:Get("FontCaption"),
@@ -341,7 +339,7 @@ function WindowLayout:_applyLayout(layout: string, initial: boolean?)
 	self._sidebarButton.Visible = true
 	self._grip.Visible = not drawerMode and not self._locked
 	if self._footer then
-		self._footer.Visible = not drawerMode
+		self._footer.Visible = not drawerMode and self._footerTextValue ~= nil
 	end
 	self._navPanel.Visible = not drawerMode and not self._sidebarHidden
 	if self._sidebarGrip then

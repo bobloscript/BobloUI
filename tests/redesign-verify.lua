@@ -1,79 +1,146 @@
--- Тестовый скрипт для проверки BobloUI редизайна
--- Запусти в Roblox executor
+-- BobloUI Visual Redesign Verification Script
+-- Запусти в Roblox executor. Каждый тест выводит PASS/FAIL.
 
+local PASS = 0
+local FAIL = 0
+
+local function check(name, condition)
+    if condition then
+        PASS += 1
+        print(`[PASS] {name}`)
+    else
+        FAIL += 1
+        warn(`[FAIL] {name}`)
+    end
+end
+
+local Players = game:GetService("Players")
 local BOBLOUI_URL = "https://raw.githubusercontent.com/bobloscript/BobloUI/redesign/visual-overhaul/dist/BobloUI.min.lua"
 
-local UI = loadstring(game:HttpGet(BOBLOUI_URL))()
+local okLib, BobloUI = pcall(function()
+    return loadstring(game:HttpGet(BOBLOUI_URL))()
+end)
+check("BobloUI loads", okLib and type(BobloUI) == "table")
 
-local W = UI:CreateWindow({
-    Title = "Visual Redesign Test",
-    Icon = "paintbrush",
+local UI = BobloUI:CreateWindow({
+    Id = "redesign-test",
+    Title = "Redesign Verify",
+    Icon = "test-tube",
     Theme = "Dark",
     Presentation = "Standard",
     ConfigFolder = "RedesignTest",
-    AutoLoad = true,
-    FooterText = "v0.11.5-redesign",
+    AutoLoad = false,
 })
 
--- Проверка 1: Табы
-local Tab1 = W:AddTab({ Title = "Controls", Icon = "sliders-horizontal" })
-local Tab2 = W:AddTab({ Title = "Theme", Icon = "palette" })
-local Tab3 = W:AddTab({ Title = "HUD", Icon = "layout-dashboard" })
+-- Test 1: Public API exists
+check("CreateWindow returns table", type(UI) == "table")
+check("AddTab exists", type(UI.AddTab) == "function")
+check("SetTheme exists", type(UI.SetTheme) == "function")
+check("SetAccent exists", type(UI.SetAccent) == "function")
+check("SetThemeToken exists", type(UI.SetThemeToken) == "function")
+check("SetKeybindHUD exists", type(UI.SetKeybindHUD) == "function")
+check("SetKeybindHUDSide exists", type(UI.SetKeybindHUDSide) == "function")
+check("ShowLoading exists", type(UI.ShowLoading) == "function")
+check("HideLoading exists", type(UI.HideLoading) == "function")
 
--- Проверка 2: Секции и контролы
-local S1 = Tab1:AddSection({ Title = "Toggles", Icon = "toggle-right" })
-local tog = S1:AddToggle({ Id = "TestToggle", Title = "Toggle", Description = "Описание опционально", Default = false })
-S1:AddToggle({ Id = "TestToggle2", Title = "Toggle без описания", Default = true })
-S1:AddToggle({ Id = "DisabledToggle", Title = "Disabled Toggle", Default = false, Disabled = true })
+-- Test 2: Tabs
+local Tab1 = UI:AddTab({ Title = "Test Tab 1", Icon = "star" })
+local Tab2 = UI:AddTab({ Title = "Test Tab 2", Icon = "heart" })
+check("AddTab returns tab", type(Tab1) == "table" and type(Tab2) == "table")
 
-local S2 = Tab1:AddSection({ Title = "Slider & Input", Icon = "move-horizontal" })
-S2:AddSlider({ Id = "TestSlider", Title = "Slider", Min = 0, Max = 100, Default = 50, Suffix = "%" })
-S2:AddSlider({ Id = "SliderNoDesc", Title = "Slider без описания", Min = 0, Max = 10, Default = 3 })
-S2:AddInput({ Id = "TestInput", Title = "Input", Placeholder = "Type here..." })
+-- Test 3: Sections — flat, no default icon
+local S1 = Tab1:AddSection({ Title = "Flat Section" })
+check("Section without Icon has nil Icon", S1.Icon == nil)
 
-local S3 = Tab1:AddSection({ Title = "Dropdown & Button", Icon = "list" })
-S3:AddDropdown({ Id = "TestDropdown", Title = "Dropdown", Options = {"Option 1", "Option 2", "Option 3"}, Default = "Option 1" })
-S3:AddButton({ Title = "Button", Text = "Click", Callback = function()
-    W:ShowLoading()
-    task.delay(1, function() W:HideLoading() end)
-end })
-S3:AddButton({ Title = "Primary Button", Text = "Primary", Variant = "Primary", Callback = function() end })
-S3:AddButton({ Title = "Danger Button", Text = "Danger", Variant = "Danger", Callback = function() end })
+local S2 = Tab1:AddSection({ Title = "Icon Section", Icon = "zap" })
+check("Section with Icon has icon", S2.Icon == "zap")
 
-local S4 = Tab1:AddSection({ Title = "Keybind" })
-S4:AddKeybind({ Id = "TestKeybind", Title = "Test Keybind", Default = { Key = "E", Mode = "Toggle" } })
+-- Test 4: Controls
+local tog = S1:AddToggle({ Id = "T1", Title = "Toggle", Default = false })
+check("AddToggle returns control", type(tog) == "table")
 
-local S5 = Tab1:AddSection({ Title = "Status & Progress" })
-S5:AddStatus({ Id = "TestStatus", Title = "Status", Value = "OK" })
-S5:AddProgress({ Id = "TestProgress", Title = "Progress", Default = 0.65 })
+local sl = S1:AddSlider({ Id = "S1", Title = "Slider", Min = 0, Max = 100, Default = 50 })
+check("AddSlider returns control", type(sl) == "table")
 
--- Проверка 3: Тема
-local Theme1 = Tab2:AddSection({ Title = "Theme" })
-Theme1:AddButton({ Title = "Switch to Light", Text = "Light", Callback = function() W:SetTheme("Light") end })
-Theme1:AddButton({ Title = "Switch to Dark", Text = "Dark", Callback = function() W:SetTheme("Dark") end })
+local btn = S1:AddButton({ Title = "Button", Text = "Click" })
+check("AddButton returns control", type(btn) == "table")
 
--- Проверка 4: HUD
-local HUD1 = Tab3:AddSection({ Title = "Keybind HUD" })
-HUD1:AddButton({ Title = "Enable HUD (Auto)", Text = "Auto", Callback = function() W:SetKeybindHUD(true) end })
-HUD1:AddButton({ Title = "Disable HUD", Text = "Off", Callback = function() W:SetKeybindHUD(false) end })
-HUD1:AddButton({ Title = "HUD Left", Text = "Left", Callback = function() W:SetKeybindHUDSide("Left") end })
-HUD1:AddButton({ Title = "HUD Right", Text = "Right", Callback = function() W:SetKeybindHUDSide("Right") end })
-HUD1:AddKeybind({ Id = "HUDKeybind1", Title = "HUD Test 1", Default = { Key = "Q", Mode = "Toggle" }, ShowInHUD = true })
-HUD1:AddKeybind({ Id = "HUDKeybind2", Title = "HUD Test 2", Default = { Key = "R", Mode = "Hold" }, ShowInHUD = true })
-HUD1:AddKeybind({ Id = "HiddenKeybind", Title = "Hidden", Default = { Key = "T", Mode = "Toggle" }, ShowInHUD = false })
+local st = S1:AddStatus({ Id = "ST1", Title = "Status", Value = "OK" })
+check("AddStatus returns control", type(st) == "table")
 
--- Проверка 5: Collapsible секция
-local S6 = Tab1:AddSection({ Title = "Collapsible", Collapsible = true })
-S6:AddToggle({ Id = "CollapsibleToggle", Title = "Inside collapsed section", Default = false })
+local pr = S1:AddProgress({ Id = "P1", Title = "Progress", Default = 0.5 })
+check("AddProgress returns control", type(pr) == "table")
 
--- Проверка 6: Два колонки (если ширина позволяет)
-local S7 = Tab1:AddSection({ Title = "Two Column Layout", Span = 2, Layout = "Grid" })
-S7:AddToggle({ Id = "Grid1", Title = "Item 1", Default = false })
-S7:AddToggle({ Id = "Grid2", Title = "Item 2", Default = true })
-S7:AddSlider({ Id = "GridSlider", Title = "Slider", Min = 0, Max = 100, Default = 50 })
+local kb = S1:AddKeybind({ Id = "KB1", Title = "Keybind", Default = { Key = "E", Mode = "Toggle" } })
+check("AddKeybind returns control", type(kb) == "table")
 
--- Уведомление о старте
+local dd = S1:AddDropdown({ Id = "DD1", Title = "Dropdown", Options = {"A", "B"}, Default = "A" })
+check("AddDropdown returns control", type(dd) == "table")
+
+local inp = S1:AddInput({ Id = "IN1", Title = "Input", Placeholder = "..." })
+check("AddInput returns control", type(inp) == "table")
+
+-- Test 5: Keybind ShowInHUD option
+local kbHud = S1:AddKeybind({ Id = "KB_HUD", Title = "HUD Key", Default = { Key = "Q", Mode = "Toggle" }, ShowInHUD = true })
+check("Keybind ShowInHUD option accepted", kbHud.ShowInHUD == true)
+
+local kbNoHud = S1:AddKeybind({ Id = "KB_NOHUD", Title = "No HUD", Default = { Key = "T", Mode = "Toggle" }, ShowInHUD = false })
+check("Keybind ShowInHUD=false accepted", kbNoHud.ShowInHUD == false)
+
+-- Test 6: Theme
+check("SetTheme works", pcall(function() UI:SetTheme("Dark") end))
+check("SetAccent works", pcall(function() UI:SetAccent(Color3.fromHex("#cbb7ff")) end))
+check("SetThemeToken works", pcall(function() UI:SetThemeToken("Accent", Color3.fromHex("#7C6CF2")) end))
+
+-- Test 7: State
+check("SetValue works", pcall(function() tog:SetValue(true) end))
+check("GetValue returns set value", tog:GetValue() == true)
+check("Reset works", pcall(function() tog:Reset() end))
+
+-- Test 8: Keybind HUD
+check("SetKeybindHUD(true) works", pcall(function() UI:SetKeybindHUD(true) end))
+check("SetKeybindHUD(false) works", pcall(function() UI:SetKeybindHUD(false) end))
+check("SetKeybindHUDSide works", pcall(function() UI:SetKeybindHUDSide("Left") end))
+check("SetKeybindHUDSide Right works", pcall(function() UI:SetKeybindHUDSide("Right") end))
+
+-- Test 9: Loading
+check("ShowLoading works", pcall(function() UI:ShowLoading() end))
+task.delay(0.2, function()
+    check("HideLoading works", pcall(function() UI:HideLoading() end))
+end)
+
+-- Test 10: Visibility
+check("SetVisible works", pcall(function() tog:SetVisible(false) end))
+check("IsVisible returns false", tog:IsVisible() == false)
+check("SetVisible restore", pcall(function() tog:SetVisible(true) end))
+
+-- Test 11: Disabled
+check("SetDisabled works", pcall(function() tog:SetDisabled(true) end))
+check("IsDisabled returns true", tog:IsDisabled() == true)
+check("SetDisabled restore", pcall(function() tog:SetDisabled(false) end))
+
+-- Test 12: Footer
+check("SetFooterText works", pcall(function() UI:SetFooterText("Test footer") end))
+check("GetFooterText returns value", UI:GetFooterText() == "Test footer")
+
+-- Test 13: Geometry
+check("SetSize works", pcall(function() UI:SetSize(UDim2.fromOffset(800, 500)) end))
+check("GetGeometry works", type(UI:GetGeometry()) == "table")
+
+-- Test 14: Notification
+check("Notify:Push works", pcall(function()
+    UI.Notify:Push({ Title = "Test", Content = "Verification", Duration = 1 })
+end))
+
+-- Test 15: Destroy controls
+check("Destroy control works", pcall(function() kbHud:Destroy() end))
+
+-- Summary
 task.delay(0.5, function()
-    W:SetThemeToken("Success", Color3.fromHex("#3DD68C"))
-    print("[Redesign Test] All checks passed!")
+    print(`\n===== RESULTS: {PASS} passed, {FAIL} failed =====`)
+    if FAIL == 0 then
+        print("All tests passed!")
+    else
+        warn(`${FAIL} test(s) FAILED`)
+    end
 end)
