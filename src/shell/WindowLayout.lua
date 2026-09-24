@@ -582,22 +582,40 @@ function WindowLayout:SetFont(font)
 			end)
 			resolved = if ok then enum else nil
 		end
-		if typeof(resolved) ~= "EnumItem" or resolved.EnumType ~= Enum.Font then
-			error("[BobloUI] Window:SetFont expects Enum.Font, font name, or font table.", 2)
+		local isEnumFont = typeof(resolved) == "EnumItem" and resolved.EnumType == Enum.Font
+		if not isEnumFont and typeof(resolved) ~= "Font" then
+			error("[BobloUI] Window:SetFont expects Enum.Font, Font, font name, or font table.", 2)
 		end
 		nextFonts = { Regular = resolved, Medium = resolved, Bold = resolved, Heavy = resolved }
 	end
-	local replacements = {
-		[previous.Regular] = nextFonts.Regular,
-		[previous.Medium] = nextFonts.Medium,
-		[previous.Bold] = nextFonts.Bold,
-		[previous.Heavy] = nextFonts.Heavy,
-	}
+	local function matches(instance, candidate)
+		if typeof(candidate) == "Font" then
+			local current = instance.FontFace
+			return current.Family == candidate.Family
+				and current.Weight == candidate.Weight
+				and current.Style == candidate.Style
+		end
+		return instance.Font == candidate
+	end
+	local function apply(instance, value)
+		if typeof(value) == "Font" then
+			instance.FontFace = value
+		else
+			instance.Font = value
+		end
+	end
 	self.Fonts = nextFonts
 	for _, screen in { self.Layers.Root, self.Layers.Overlay, self.Layers.Toast } do
 		for _, instance in screen:GetDescendants() do
 			if instance:IsA("TextLabel") or instance:IsA("TextButton") or instance:IsA("TextBox") then
-				instance.Font = replacements[instance.Font] or nextFonts.Regular
+				local replacement = nextFonts.Regular
+				for _, key in { "Regular", "Medium", "Bold", "Heavy" } do
+					if matches(instance, previous[key]) then
+						replacement = nextFonts[key]
+						break
+					end
+				end
+				apply(instance, replacement)
 			end
 		end
 	end

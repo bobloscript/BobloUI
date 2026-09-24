@@ -323,9 +323,15 @@ UI:SetDensity("Compact")
 UI:SetHighContrast(true)
 UI:SetSidebarWidth(196)
 UI:SetCompact(true)
-UI:SetFont(Enum.Font.Gotham)
+UI:SetFont(Enum.Font.Gotham) -- optional override; Figtree is the default
 UI:SetAnimations({Window=true, Tabs=true, Controls=false})
 ```
+
+BobloUI uses Figtree Regular/Medium/Bold/ExtraBold by default. Executor builds
+cache the bundled OFL-licensed font files locally; environments without the
+filesystem or custom-asset APIs fall back safely to BuilderSans. Existing
+`SetFont(Enum.Font...)` calls remain compatible, and `SetFont(Font.new(...))`
+is also supported.
 
 Sections can adapt at both page and control level:
 

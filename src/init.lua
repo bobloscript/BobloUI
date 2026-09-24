@@ -3,6 +3,7 @@
 local Env = require("@runtime/Env")
 local Janitor = require("@runtime/Janitor")
 local Util = require("@runtime/Util")
+local Typography = require("@runtime/Typography")
 local Tokens = require("@kernel/Tokens")
 local Theme = require("@kernel/Theme")
 local Device = require("@kernel/Device")
@@ -392,7 +393,7 @@ function BobloUI:CreateWindow(options)
 		Tokens = tokens,
 		Device = device,
 		Layers = layers,
-		Fonts = Tokens.Fonts,
+		Fonts = Typography.Prepare(Tokens.Fonts),
 		State = state,
 		Registry = registry,
 		Input = input,

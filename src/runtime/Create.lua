@@ -15,7 +15,11 @@ function Create.Apply(instance: Instance, props: { [string]: any }?): Instance
 	end
 	for key, value in props do
 		if key ~= "Parent" then
-			instance[key] = value
+			if key == "Font" and typeof(value) == "Font" then
+				instance.FontFace = value
+			else
+				instance[key] = value
+			end
 		end
 	end
 	return instance

@@ -64,6 +64,7 @@ const dropdownSrc=readFileSync(join(root,'src/controls/Dropdown.lua'),'utf8');
 const validateSrc=readFileSync(join(root,'src/runtime/Validate.lua'),'utf8');
 const interactionsSrc=readFileSync(join(root,'src/services/Interactions.lua'),'utf8');
 const envSrc=readFileSync(join(root,'src/runtime/Env.lua'),'utf8');
+const createSrc=readFileSync(join(root,'src/runtime/Create.lua'),'utf8');
 const notifySrc=readFileSync(join(root,'src/services/Notify.lua'),'utf8');
 const soundSrc=readFileSync(join(root,'src/services/Sound.lua'),'utf8');
 const navigationSrc=readFileSync(join(root,'src/services/Navigation.lua'),'utf8');
@@ -366,6 +367,9 @@ for(const method of ['SaveCustomTheme','DeleteCustomTheme','ReloadCustomThemes',
 if(!themeManagerSrc.includes('/themes') || !themeManagerSrc.includes('default.txt') || !hasCode(init,'window.ThemeManager=themeManager') || !init.includes('function window:SetThemeFolder')) fail('persisted custom theme library/default integration missing'); else ok('persisted custom theme library and default wired');
 
 for(const method of ['SetSidebarWidth','GetSidebarWidth','SetSidebarResizeEnabled','SetCompact','IsCompact','SetFont','GetFont']) if(!windowLayoutSrc.includes(`function WindowLayout:${method}`)) fail(`Window customization missing ${method}`);
+const typographySrc=readFileSync(join(root,'src/runtime/Typography.lua'),'utf8');
+for(const needle of ['Figtree-Regular.ttf','Figtree-Medium.ttf','Figtree-Bold.ttf','Figtree-ExtraBold.ttf','function Typography.Prepare','Font.new(familyAsset','BuilderSans fallback']) if(!typographySrc.includes(needle)) fail(`Figtree typography integration missing ${needle}`);
+if(!createSrc.includes('key == "Font" and typeof(value) == "Font"') || !windowLayoutSrc.includes('typeof(resolved) ~= "Font"') || !dialogSrc.includes('GetTextBoundsAsync')) fail('FontFace compatibility path incomplete'); else ok('Figtree default and legacy Enum.Font override paths wired');
 for(const method of ['SetAnimations','SetAnimationEnabled']) if(!windowChromeSrc.includes(`function WindowChrome:${method}`)) fail(`granular animation API missing ${method}`);
 if(!motionSrc.includes('function Motion:SetCategory') || !motionSrc.includes('function Motion:IsEnabled') || !windowChromeSrc.includes('SetCategory("Window"') || !windowChromeSrc.includes('SetCategory("Tabs"') || !windowChromeSrc.includes('SetCategory("Controls"')) fail('animation categories are not independent');
 if(!windowLayoutSrc.includes('SidebarResizeGrip') || !hasCode(windowLayoutSrc,'SidebarWidth=self._sidebarWidth') || !hasCode(windowLayoutSrc,'Compact=self:IsCompact()')) fail('sidebar/compact geometry persistence missing'); else ok('sidebar width/drag, compact, font and independent animation APIs wired');

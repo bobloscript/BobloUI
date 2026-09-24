@@ -1,5 +1,9 @@
 # Unreleased
 
+- Replaced the default BuilderSans/Gotham typography with locally cached
+  Figtree Regular, Medium, Bold and ExtraBold faces. Environments without
+  filesystem/custom-asset support retain a safe BuilderSans fallback, while
+  existing `SetFont(Enum.Font...)` overrides remain compatible.
 - Stabilized window dragging on desktop and touch devices: pointer capture now
   follows only the mouse button or finger that began the drag, active window
   position tweens are cancelled before manual movement, and the window remains

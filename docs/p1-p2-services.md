@@ -84,7 +84,7 @@ Every overlay handle supports `SetVisible`, `SetPosition`, `GetInstance` and
 UI:SetSidebarWidth(200)
 UI:SetSidebarResizeEnabled(true)
 UI:SetCompact(true)
-UI:SetFont(Enum.Font.Gotham)
+UI:SetFont(Enum.Font.Gotham) -- optional override; Figtree is the default
 UI:SetAnimations({Window=true, Tabs=false, Controls=true})
 UI:SetAnimationEnabled("Tabs", true)
 ```

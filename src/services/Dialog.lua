@@ -23,6 +23,14 @@ function Dialog:_measure(text, width)
 	end
 	local w = self._window
 	local ok, size = pcall(function()
+		if typeof(w.Fonts.Regular) == "Font" then
+			local params = Instance.new("GetTextBoundsParams")
+			params.Text = tostring(text)
+			params.Size = w.Tokens:Get("FontBody")
+			params.Width = width
+			params.Font = w.Fonts.Regular
+			return TextService:GetTextBoundsAsync(params)
+		end
 		return TextService:GetTextSize(
 			tostring(text),
 			w.Tokens:Get("FontBody"),
