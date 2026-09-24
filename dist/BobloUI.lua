@@ -482,7 +482,8 @@ function Base:_applyHoverVisual(hover)
 	self._root.BackgroundColor3 = self._window.Theme:Get("ControlHover")
 	local active = hover and not self._disabled
 	self._window.Motion:Tween(self._root, "Fast", {
-		BackgroundTransparency = if active then (if self._window._minimal then 0.54 else 0.74)
+		BackgroundTransparency = if active
+			then (if self._window._minimal then 0.54 else 0.74)
 			else (if self._window._minimal then 0.78 else 1),
 	})
 	if self._hoverRail then
@@ -4333,16 +4334,23 @@ function Toggle:_mountValue(host)
 	if w._minimal then
 		self._root.Active = true
 		self._janitor:Add(self._root.InputBegan:Connect(function(input)
-			if self:IsDisabled() or (
-				input.UserInputType ~= Enum.UserInputType.MouseButton1
-				and input.UserInputType ~= Enum.UserInputType.Touch
-			) then
+			if
+				self:IsDisabled()
+				or (
+					input.UserInputType ~= Enum.UserInputType.MouseButton1
+					and input.UserInputType ~= Enum.UserInputType.Touch
+				)
+			then
 				return
 			end
 			local point = input.Position
 			local buttonPos, buttonSize = self._button.AbsolutePosition, self._button.AbsoluteSize
-			if point.X >= buttonPos.X and point.X <= buttonPos.X + buttonSize.X
-				and point.Y >= buttonPos.Y and point.Y <= buttonPos.Y + buttonSize.Y then
+			if
+				point.X >= buttonPos.X
+				and point.X <= buttonPos.X + buttonSize.X
+				and point.Y >= buttonPos.Y
+				and point.Y <= buttonPos.Y + buttonSize.Y
+			then
 				return
 			end
 			self:Flip()
@@ -5806,6 +5814,22 @@ end
 local function isPointerMove(i)
 	return i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch
 end
+local function matchesCapturedPointer(capture, input, moving)
+	local captured = capture and capture.Input
+	if not captured then
+		return false
+	end
+	if captured.UserInputType == Enum.UserInputType.Touch then
+		-- Every finger has its own InputObject. Accepting any Touch event here can
+		-- teleport a drag to the position of a second finger.
+		return input == captured
+	end
+	if captured.UserInputType == Enum.UserInputType.MouseButton1 then
+		return input.UserInputType
+			== (if moving then Enum.UserInputType.MouseMovement else Enum.UserInputType.MouseButton1)
+	end
+	return false
+end
 local function eventKey(i)
 	return if i.KeyCode ~= Enum.KeyCode.Unknown then i.KeyCode else i.UserInputType
 end
@@ -5872,7 +5896,7 @@ function Input:_began(i, processed)
 	self.Began:Fire(i, processed)
 end
 function Input:_changed(i, processed)
-	if self._capture and isPointerMove(i) then
+	if self._capture and isPointerMove(i) and matchesCapturedPointer(self._capture, i, true) then
 		local c = self._capture
 		if c.Changed then
 			c.Changed(i)
@@ -5881,14 +5905,7 @@ function Input:_changed(i, processed)
 	self.Changed:Fire(i, processed)
 end
 function Input:_ended(i, processed)
-	if
-		self._capture
-		and (
-			isPointerStart(i)
-			or i.UserInputType == Enum.UserInputType.MouseButton1
-			or i.UserInputType == Enum.UserInputType.Touch
-		)
-	then
+	if self._capture and matchesCapturedPointer(self._capture, i, false) then
 		local c = self._capture
 		self._capture = nil
 		if c.Ended then
@@ -5913,7 +5930,7 @@ function Input:CapturePointer(owner, input, onChanged, onEnded)
 	if self._capture and self._capture.Ended then
 		pcall(self._capture.Ended, input, true)
 	end
-	self._capture = { Owner = owner, Changed = onChanged, Ended = onEnded }
+	self._capture = { Owner = owner, Input = input, Changed = onChanged, Ended = onEnded }
 	return true
 end
 function Input:CancelCapture(owner)
@@ -5929,16 +5946,18 @@ function Input:AttachDrag(gui, onDelta, enabledFn)
 	local janitor = Janitor.new("Input.Drag")
 	local startPos
 	janitor:Add(gui.InputBegan:Connect(function(i)
-		if enabledFn and not enabledFn() then
+		if not isPointerStart(i) then
 			return
 		end
-		if not isPointerStart(i) then
+		if enabledFn and not enabledFn() then
 			return
 		end
 		startPos = i.Position
 		self:CapturePointer(gui, i, function(move)
 			onDelta(move.Position - startPos, move)
-		end, function() end)
+		end, function()
+			startPos = nil
+		end)
 	end))
 	return janitor
 end
@@ -6459,13 +6478,18 @@ end
 function Motion:IsEnabled(category)
 	return self.Enabled and (category == nil or self._categories[category] ~= false)
 end
-function Motion:Tween(instance, info, props, category)
-	local old = self._active[instance]
-	if old then
+function Motion:Cancel(instance)
+	local tween = self._active[instance]
+	if tween then
+		self._active[instance] = nil
 		pcall(function()
-			old:Cancel()
+			tween:Cancel()
 		end)
 	end
+	return self
+end
+function Motion:Tween(instance, info, props, category)
+	self:Cancel(instance)
 	if not self:IsEnabled(category or "Controls") then
 		for k, v in props do
 			instance[k] = v
@@ -20948,10 +20972,8 @@ function Section:_applyTokens()
 		self._padding.PaddingRight = u
 	end
 	if self._rootLayout then
-		self._rootLayout.Padding = UDim.new(
-			0,
-			if self._implicit then t:Get("RowGap") elseif self._window._minimal then 6 else 12
-		)
+		self._rootLayout.Padding =
+			UDim.new(0, if self._implicit then t:Get("RowGap") elseif self._window._minimal then 6 else 12)
 	end
 	if self._contentLayout then
 		self._contentLayout.Padding = UDim.new(0, t:Get("RowGap"))
@@ -21543,10 +21565,8 @@ function Tab:_applyTokens()
 		self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 	end
 	if self._emptyState then
-		self._emptyState.Position = UDim2.fromOffset(
-			pagePadding,
-			self._introHeight + (if self._window._minimal then 0 else 24)
-		)
+		self._emptyState.Position =
+			UDim2.fromOffset(pagePadding, self._introHeight + (if self._window._minimal then 0 else 24))
 		self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 		self._emptyState.TextSize = t:Get("FontBody")
 	end
@@ -21873,10 +21893,8 @@ function Tab:SetDescription(description: string?)
 		self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 	end
 	if self._emptyState then
-		self._emptyState.Position = UDim2.fromOffset(
-			pagePadding,
-			self._introHeight + (if self._window._minimal then 0 else 24)
-		)
+		self._emptyState.Position =
+			UDim2.fromOffset(pagePadding, self._introHeight + (if self._window._minimal then 0 else 24))
 		self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 	end
 	self:_scheduleSectionLayout()
@@ -23970,20 +23988,47 @@ function WindowLayout:_attachDrag(handle: GuiObject)
 		if not startPosition then
 			return
 		end
-		self._root.Position = UDim2.new(
+		local proposed = UDim2.new(
 			startPosition.X.Scale,
 			startPosition.X.Offset + delta.X,
 			startPosition.Y.Scale,
 			startPosition.Y.Offset + delta.Y
 		)
+		self._root.Position = self:_clampDragPosition(proposed)
 	end, function()
 		if self._layout == "Drawer" or self._locked then
 			return false
 		end
+		-- A Show() tween and a drag must never write Position concurrently.
+		self.Motion:Cancel(self._root)
 		startPosition = self._root.Position
 		return true
 	end)
 	self._janitor:Add(dragJanitor)
+end
+
+function WindowLayout:_clampDragPosition(position: UDim2): UDim2
+	local safePosition, safeSize = self.Device:SafeArea()
+	local viewport = self.Device.Viewport
+	local size = self._root.AbsoluteSize
+	local anchor = self._root.AnchorPoint
+
+	local desiredX = position.X.Scale * viewport.X + position.X.Offset
+	local desiredY = position.Y.Scale * viewport.Y + position.Y.Offset
+	local minX = safePosition.X + size.X * anchor.X
+	local maxX = safePosition.X + safeSize.X - size.X * (1 - anchor.X)
+	local minY = safePosition.Y + size.Y * anchor.Y
+	local maxY = safePosition.Y + safeSize.Y - size.Y * (1 - anchor.Y)
+
+	local clampedX = if minX <= maxX then math.clamp(desiredX, minX, maxX) else safePosition.X + safeSize.X / 2
+	local clampedY = if minY <= maxY then math.clamp(desiredY, minY, maxY) else safePosition.Y + safeSize.Y / 2
+
+	return UDim2.new(
+		position.X.Scale,
+		position.X.Offset + clampedX - desiredX,
+		position.Y.Scale,
+		position.Y.Offset + clampedY - desiredY
+	)
 end
 
 -- ===== layout ====================================================

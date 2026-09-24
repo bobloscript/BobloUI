@@ -1,5 +1,11 @@
 # Unreleased
 
+- Stabilized window dragging on desktop and touch devices: pointer capture now
+  follows only the mouse button or finger that began the drag, active window
+  position tweens are cancelled before manual movement, and the window remains
+  clamped to the current safe area.
+- Added a manual drag regression smoke covering animation, scale changes and
+  multi-touch input.
 - Custom themes now take part in light/dark switching. Every palette has an
   appearance polarity, derived from `Canvas` luminance and overridable with
   `Appearance = "Dark" | "Light"`; an optional `Pair` names an explicit

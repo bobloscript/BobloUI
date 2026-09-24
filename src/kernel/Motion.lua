@@ -30,13 +30,18 @@ end
 function Motion:IsEnabled(category)
 	return self.Enabled and (category == nil or self._categories[category] ~= false)
 end
-function Motion:Tween(instance, info, props, category)
-	local old = self._active[instance]
-	if old then
+function Motion:Cancel(instance)
+	local tween = self._active[instance]
+	if tween then
+		self._active[instance] = nil
 		pcall(function()
-			old:Cancel()
+			tween:Cancel()
 		end)
 	end
+	return self
+end
+function Motion:Tween(instance, info, props, category)
+	self:Cancel(instance)
 	if not self:IsEnabled(category or "Controls") then
 		for k, v in props do
 			instance[k] = v

@@ -392,7 +392,8 @@ function Base:_applyHoverVisual(hover)
 	self._root.BackgroundColor3 = self._window.Theme:Get("ControlHover")
 	local active = hover and not self._disabled
 	self._window.Motion:Tween(self._root, "Fast", {
-		BackgroundTransparency = if active then (if self._window._minimal then 0.54 else 0.74)
+		BackgroundTransparency = if active
+			then (if self._window._minimal then 0.54 else 0.74)
 			else (if self._window._minimal then 0.78 else 1),
 	})
 	if self._hoverRail then

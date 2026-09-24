@@ -439,10 +439,8 @@ function Section:_applyTokens()
 		self._padding.PaddingRight = u
 	end
 	if self._rootLayout then
-		self._rootLayout.Padding = UDim.new(
-			0,
-			if self._implicit then t:Get("RowGap") elseif self._window._minimal then 6 else 12
-		)
+		self._rootLayout.Padding =
+			UDim.new(0, if self._implicit then t:Get("RowGap") elseif self._window._minimal then 6 else 12)
 	end
 	if self._contentLayout then
 		self._contentLayout.Padding = UDim.new(0, t:Get("RowGap"))

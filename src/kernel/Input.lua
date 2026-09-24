@@ -10,6 +10,22 @@ end
 local function isPointerMove(i)
 	return i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch
 end
+local function matchesCapturedPointer(capture, input, moving)
+	local captured = capture and capture.Input
+	if not captured then
+		return false
+	end
+	if captured.UserInputType == Enum.UserInputType.Touch then
+		-- Every finger has its own InputObject. Accepting any Touch event here can
+		-- teleport a drag to the position of a second finger.
+		return input == captured
+	end
+	if captured.UserInputType == Enum.UserInputType.MouseButton1 then
+		return input.UserInputType
+			== (if moving then Enum.UserInputType.MouseMovement else Enum.UserInputType.MouseButton1)
+	end
+	return false
+end
 local function eventKey(i)
 	return if i.KeyCode ~= Enum.KeyCode.Unknown then i.KeyCode else i.UserInputType
 end
@@ -76,7 +92,7 @@ function Input:_began(i, processed)
 	self.Began:Fire(i, processed)
 end
 function Input:_changed(i, processed)
-	if self._capture and isPointerMove(i) then
+	if self._capture and isPointerMove(i) and matchesCapturedPointer(self._capture, i, true) then
 		local c = self._capture
 		if c.Changed then
 			c.Changed(i)
@@ -85,14 +101,7 @@ function Input:_changed(i, processed)
 	self.Changed:Fire(i, processed)
 end
 function Input:_ended(i, processed)
-	if
-		self._capture
-		and (
-			isPointerStart(i)
-			or i.UserInputType == Enum.UserInputType.MouseButton1
-			or i.UserInputType == Enum.UserInputType.Touch
-		)
-	then
+	if self._capture and matchesCapturedPointer(self._capture, i, false) then
 		local c = self._capture
 		self._capture = nil
 		if c.Ended then
@@ -117,7 +126,7 @@ function Input:CapturePointer(owner, input, onChanged, onEnded)
 	if self._capture and self._capture.Ended then
 		pcall(self._capture.Ended, input, true)
 	end
-	self._capture = { Owner = owner, Changed = onChanged, Ended = onEnded }
+	self._capture = { Owner = owner, Input = input, Changed = onChanged, Ended = onEnded }
 	return true
 end
 function Input:CancelCapture(owner)
@@ -133,16 +142,18 @@ function Input:AttachDrag(gui, onDelta, enabledFn)
 	local janitor = Janitor.new("Input.Drag")
 	local startPos
 	janitor:Add(gui.InputBegan:Connect(function(i)
-		if enabledFn and not enabledFn() then
+		if not isPointerStart(i) then
 			return
 		end
-		if not isPointerStart(i) then
+		if enabledFn and not enabledFn() then
 			return
 		end
 		startPos = i.Position
 		self:CapturePointer(gui, i, function(move)
 			onDelta(move.Position - startPos, move)
-		end, function() end)
+		end, function()
+			startPos = nil
+		end)
 	end))
 	return janitor
 end

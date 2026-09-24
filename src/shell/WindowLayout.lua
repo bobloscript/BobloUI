@@ -183,20 +183,47 @@ function WindowLayout:_attachDrag(handle: GuiObject)
 		if not startPosition then
 			return
 		end
-		self._root.Position = UDim2.new(
+		local proposed = UDim2.new(
 			startPosition.X.Scale,
 			startPosition.X.Offset + delta.X,
 			startPosition.Y.Scale,
 			startPosition.Y.Offset + delta.Y
 		)
+		self._root.Position = self:_clampDragPosition(proposed)
 	end, function()
 		if self._layout == "Drawer" or self._locked then
 			return false
 		end
+		-- A Show() tween and a drag must never write Position concurrently.
+		self.Motion:Cancel(self._root)
 		startPosition = self._root.Position
 		return true
 	end)
 	self._janitor:Add(dragJanitor)
+end
+
+function WindowLayout:_clampDragPosition(position: UDim2): UDim2
+	local safePosition, safeSize = self.Device:SafeArea()
+	local viewport = self.Device.Viewport
+	local size = self._root.AbsoluteSize
+	local anchor = self._root.AnchorPoint
+
+	local desiredX = position.X.Scale * viewport.X + position.X.Offset
+	local desiredY = position.Y.Scale * viewport.Y + position.Y.Offset
+	local minX = safePosition.X + size.X * anchor.X
+	local maxX = safePosition.X + safeSize.X - size.X * (1 - anchor.X)
+	local minY = safePosition.Y + size.Y * anchor.Y
+	local maxY = safePosition.Y + safeSize.Y - size.Y * (1 - anchor.Y)
+
+	local clampedX = if minX <= maxX then math.clamp(desiredX, minX, maxX) else safePosition.X + safeSize.X / 2
+	local clampedY = if minY <= maxY then math.clamp(desiredY, minY, maxY) else safePosition.Y + safeSize.Y / 2
+
+	return UDim2.new(
+		position.X.Scale,
+		position.X.Offset + clampedX - desiredX,
+		position.Y.Scale,
+		position.Y.Offset + clampedY - desiredY
+	)
 end
 
 -- ===== layout ====================================================

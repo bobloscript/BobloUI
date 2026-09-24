@@ -16,6 +16,7 @@ const windowCoreSrc=readFileSync(join(root,'src/shell/Window.lua'),'utf8');
 const tabSrc=readFileSync(join(root,'src/shell/Tab.lua'),'utf8');
 const windowChromeSrc=readFileSync(join(root,'src/shell/WindowChrome.lua'),'utf8');
 const windowLayoutSrc=readFileSync(join(root,'src/shell/WindowLayout.lua'),'utf8');
+const motionSrc=readFileSync(join(root,'src/kernel/Motion.lua'),'utf8');
 const windowSrc=[windowCoreSrc,tabSrc,windowChromeSrc.replaceAll('WindowChrome:','Window:'),windowLayoutSrc.replaceAll('WindowLayout:','Window:')].join('\n');
 for(const c of Object.values(manifest.components)) if(!tabSrc.includes(`function Tab:${c.method}`)) fail(`Tab missing ${c.method}`);
 const all=[]; const walk=(d)=>{for(const n of readdirSync(d,{withFileTypes:true})){const p=join(d,n.name); if(n.isDirectory())walk(p); else if(n.name.endsWith('.lua'))all.push([p,readFileSync(p,'utf8')])}}; walk(join(root,'src'));
@@ -227,6 +228,9 @@ if(!hasCode(tabSrc,'Icon.setColor(self._avatar,theme:Get(if selected then "Accen
 if(!hasCode(dialogSrc,'Size=if full then UDim2.new(1,0,0,34)') || (!hasCode(dialogSrc,'{FullWidth=true}') && !hasCode(dialogSrc,'{FullWidth=true,Icon=choice.Icon}')) || !hasCode(dialogSrc,'ClipsDescendants=true')) fail('dialog choice/overflow regression guards missing'); else ok('Choice dialog rows and viewport overflow guards wired');
 if(!inputSrc.includes('GetFocusedTextBox') || !inputSrc.includes('if self._nextCapture then') || inputSrc.includes('self._nextCapture and not processed')) fail('keybind processed-input/capture reliability fix missing'); else ok('keybind capture ignores processed flag while bindings suppress typing');
 if(!keybindSrc.includes('self._janitor:Release("capture")') || !keybindSrc.includes('CaptureNextKey(function(key)')) fail('keybind capture lifecycle cleanup missing'); else ok('keybind capture lifecycle cleanup wired');
+if(!hasCode(inputSrc,'Input=input') || !inputSrc.includes('matchesCapturedPointer') || !hasCode(inputSrc,'return input==captured')) fail('drag capture is not scoped to the initiating pointer'); else ok('drag capture ignores unrelated touch pointers');
+if(!motionSrc.includes('function Motion:Cancel') || !hasCode(windowLayoutSrc,'self.Motion:Cancel(self._root)')) fail('window drag does not cancel competing position tween'); else ok('window drag cancels competing position tween');
+if(!windowLayoutSrc.includes('function WindowLayout:_clampDragPosition') || !hasCode(windowLayoutSrc,'self._root.Position=self:_clampDragPosition(proposed)')) fail('window drag safe-area clamp missing'); else ok('window drag remains inside the safe area');
 // 0.10.3 regression guards: UIScale must not be applied twice to logical layout sizes.
 if(!hasCode(windowSrc,'self._sectionHost.AbsoluteSize.X/scale') || !hasCode(windowSrc,'section._root.AbsoluteSize.Y or scale')) fail('scale-aware section layout guard missing'); else ok('section layout converts AbsoluteSize back to logical pixels');
 if(!hasCode(tabSrc,'local edgeInset=1') || !hasCode(tabSrc,'local layoutWidth=math.max(1,available-edgeInset*2)') || !hasCode(tabSrc,'math.max(0,y-gap+edgeInset)')) fail('SectionHost/card border inset can be erased during relayout'); else ok('SectionHost layout preserves padding and complete card borders');
@@ -331,7 +335,6 @@ const passthroughSrc=readFileSync(join(root,'src/controls/Passthrough.lua'),'utf
 const viewportSrc=readFileSync(join(root,'src/controls/Viewport.lua'),'utf8');
 const videoSrc=readFileSync(join(root,'src/controls/Video.lua'),'utf8');
 const buttonSrc=readFileSync(join(root,'src/controls/Button.lua'),'utf8');
-const motionSrc=readFileSync(join(root,'src/kernel/Motion.lua'),'utf8');
 
 for(const method of ['AddFooterButton','RemoveFooterButton','SetButtonDisabled','SetButtonOrder','SetTitle','SetDescription','Dismiss','IsOpen','Await']) {
   if(!dialogSrc.includes(`function handle:${method}`)) fail(`Dialog v2 handle missing ${method}`);

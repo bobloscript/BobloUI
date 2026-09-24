@@ -311,10 +311,8 @@ function Tab:_applyTokens()
 		self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 	end
 	if self._emptyState then
-		self._emptyState.Position = UDim2.fromOffset(
-			pagePadding,
-			self._introHeight + (if self._window._minimal then 0 else 24)
-		)
+		self._emptyState.Position =
+			UDim2.fromOffset(pagePadding, self._introHeight + (if self._window._minimal then 0 else 24))
 		self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 		self._emptyState.TextSize = t:Get("FontBody")
 	end
@@ -641,10 +639,8 @@ function Tab:SetDescription(description: string?)
 		self._sectionHost.Size = UDim2.new(1, -(pagePadding * 2), 0, 0)
 	end
 	if self._emptyState then
-		self._emptyState.Position = UDim2.fromOffset(
-			pagePadding,
-			self._introHeight + (if self._window._minimal then 0 else 24)
-		)
+		self._emptyState.Position =
+			UDim2.fromOffset(pagePadding, self._introHeight + (if self._window._minimal then 0 else 24))
 		self._emptyState.Size = UDim2.new(1, -(pagePadding * 2), 0, 54)
 	end
 	self:_scheduleSectionLayout()

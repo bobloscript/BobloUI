@@ -66,16 +66,23 @@ function Toggle:_mountValue(host)
 	if w._minimal then
 		self._root.Active = true
 		self._janitor:Add(self._root.InputBegan:Connect(function(input)
-			if self:IsDisabled() or (
-				input.UserInputType ~= Enum.UserInputType.MouseButton1
-				and input.UserInputType ~= Enum.UserInputType.Touch
-			) then
+			if
+				self:IsDisabled()
+				or (
+					input.UserInputType ~= Enum.UserInputType.MouseButton1
+					and input.UserInputType ~= Enum.UserInputType.Touch
+				)
+			then
 				return
 			end
 			local point = input.Position
 			local buttonPos, buttonSize = self._button.AbsolutePosition, self._button.AbsoluteSize
-			if point.X >= buttonPos.X and point.X <= buttonPos.X + buttonSize.X
-				and point.Y >= buttonPos.Y and point.Y <= buttonPos.Y + buttonSize.Y then
+			if
+				point.X >= buttonPos.X
+				and point.X <= buttonPos.X + buttonSize.X
+				and point.Y >= buttonPos.Y
+				and point.Y <= buttonPos.Y + buttonSize.Y
+			then
 				return
 			end
 			self:Flip()
